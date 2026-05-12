@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "luthea"
+version = "0.1.0"
+description = "Land-Use Transition-based Heat Exposure Attribution framework for Yamaguchi central district"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "LULCtoLST authors" }]
+license = { text = "MIT" }
+dependencies = [
+  "numpy",
+  "pandas",
+  "scipy",
+  "statsmodels",
+  "scikit-learn",
+  "xgboost",
+  "shap",
+  "geopandas",
+  "shapely",
+  "pyproj",
+  "rasterio",
+  "rioxarray",
+  "xarray",
+  "matplotlib",
+]
+
+[project.optional-dependencies]
+gee = ["earthengine-api", "geemap"]
+nasa = ["earthaccess"]
+causal = ["causalinference", "pymatch", "econml"]
+viz = ["cartopy", "contextily", "plotly", "seaborn"]
+dev = ["pytest", "ruff", "mypy"]
+
+[project.scripts]
+luthea = "luthea.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

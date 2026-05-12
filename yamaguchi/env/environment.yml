@@ -1,0 +1,43 @@
+name: luthea
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - pandas
+  - scipy
+  - statsmodels
+  - scikit-learn
+  - xgboost
+  - lightgbm
+  - shap
+  - matplotlib
+  - seaborn
+  - plotly
+  - geopandas
+  - shapely
+  - pyproj
+  - rasterio
+  - rioxarray
+  - xarray
+  - dask
+  - netcdf4
+  - h5py
+  - pyarrow
+  - joblib
+  - tqdm
+  - jupyterlab
+  - ipykernel
+  - cartopy
+  - contextily
+  - osmnx
+  - pylandstats
+  - pip:
+      - earthengine-api
+      - geemap
+      - earthaccess
+      - causalinference
+      - pymatch
+      - econml
+      - geoshapley

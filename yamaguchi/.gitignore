@@ -1,0 +1,44 @@
+# Data outputs (large, regenerable)
+outputs/**/*.tif
+outputs/**/*.parquet
+outputs/**/*.csv
+outputs/**/*.nc
+outputs/**/*.npy
+outputs/**/*.pkl
+!outputs/**/.gitkeep
+
+# Figures and tables (regenerable)
+figures/*.png
+figures/*.pdf
+figures/*.svg
+tables/*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg
+build/
+dist/
+
+# Environment
+.env
+.venv/
+env/.conda/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large raw downloads (keep small AOI/JMA inputs committed)
+yamaguchi/outputs/raw/
+yonago/outputs/raw/
