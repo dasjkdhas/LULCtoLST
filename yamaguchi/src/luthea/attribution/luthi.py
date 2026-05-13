@@ -45,12 +45,21 @@ def hsi(luthi_typ: pd.Series, luthi_ext: pd.Series) -> pd.Series:
 
 
 def ssi(luthi_by_scale: dict[int, pd.Series], r_star: int) -> pd.Series:
-    """Centred finite difference dLUTHI/dr at r*.
+    """**Deprecated, kept for completeness.** Multi-scale ∂LUTHI/∂r was
+    retired during the Socratic Q3 parsimony pass; the headline LUTHI is
+    reported at a single 300 m matching radius. This function remains
+    available for the methodological supplement and for replication of
+    earlier drafts; it should not be called from the main analysis.
 
-    `luthi_by_scale` keys must include neighbours of r_star in the sorted scale
-    list; e.g. for r_star=300 with scales (100, 300, 500) the derivative is
-    (LUTHI(500) − LUTHI(100)) / (500 − 100).
+    Centred finite difference dLUTHI/dr at r*. `luthi_by_scale` keys must
+    include neighbours of r_star in the sorted scale list.
     """
+    import warnings
+    warnings.warn(
+        "ssi() is deprecated as a headline estimator; see luthi.py module "
+        "docstring and paper_conception.md § 0 (Q3 lock).",
+        DeprecationWarning, stacklevel=2,
+    )
     scales = sorted(luthi_by_scale.keys())
     if r_star not in scales:
         raise ValueError(f"ssi: r_star={r_star} not in scales {scales}")

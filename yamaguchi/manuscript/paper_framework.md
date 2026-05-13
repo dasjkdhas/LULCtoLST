@@ -6,13 +6,12 @@
 > figure/table evidence ledger, and the dependency graph between
 > sections.
 >
-> Target journal: *Remote Sensing*. Target total length: ≈ 8 500 words
-> (excluding references, captions, SI). Section budgets below sum to
-> ≈ 8 700 — trim during revision.
+> Target journal: *Remote Sensing*. Target total length: ≈ 8 900 words
+> (excluding references, captions, SI). Section budgets below.
 
 ---
 
-## 0. Article identity card
+## 0. Article identity card (post-Socratic Q1–Q4 lock)
 
 | Field | Value |
 |---|---|
@@ -20,8 +19,11 @@
 | Journal | Remote Sensing (MDPI) |
 | Article type | Research article |
 | Reader profile | Remote-sensing methodologists; urban-climate empiricists; ML + causal-inference cross-over |
-| One-sentence pitch | We replace state-based LULC×LST correlations with a quasi-causal, trajectory-based attribution that survives weather + spatial confounder controls and a placebo test. |
-| Headline number to hit | ≥ 1 transition path with bootstrap CI not crossing zero AND placebo p > 0.05 in both typical *and* extreme scenarios |
+| One-sentence pitch (**Q1**) | "We introduce a method that upgrades LULC-vs-LST analysis from correlation to **quasi-causal attribution**, and validate it on Yamaguchi." |
+| Most-feared rejection (**Q2**) | (a) "LUTHI is dressed-up DiD" + (b) "Spatially-uniform β̂ is biophysically untenable" |
+| Subtracted module (**Q3**) | Multi-scale SSI dropped; LUTHI computed at single 300 m default radius |
+| Headline finding (**Q4**) | α: HSI(Green→Built-up) ≈ +1.8 °C (≈180 % amplification under extreme heat) + β: HSI(Built-up→Green) ≈ −0.2 °C (cooling potential collapses) — together: *non-symmetric, state-dependent transition heat impact* |
+| Headline number to hit | Both α-prediction CI and β-prediction CI not crossing zero AND placebo p > 0.05 AND visible in Fig. 5 at a glance |
 | Manuscript deadline (self-set) | end of Yamaguchi pipeline + 6 weeks |
 
 ---
@@ -81,34 +83,38 @@ move ≈ 50 words.
 | 2.2 Satellite data | 250 | Table 1: Dynamic World V1 (10 m, yearly mode), Landsat 8/9 C2 L2 ST (30 m), ECOSTRESS (auxiliary), ESA WorldCover (cross-validation), MODIS (background only). Justify exclusions. |
 | 2.3 Meteorological and ancillary data | 250 | JMA 81428 daily + AMeDAS 10-min schema, GSI DEM 5 m / ALOS AW3D30, OSM roads, GSW water mask, OSM/基盤地図 buildings. |
 
-### § 3 Methods (≈ 2 500 words)
+### § 3 Methods (≈ 3 000 words; updated per Q1+Q2 lock)
 
-| Sub | ≈ words | Anchor equations | Figure |
+| Sub | ≈ words | Anchor equations | Figure / SI |
 |---|---|---|---|
-| 3.1 Framework overview | 200 | — | Fig. 2 flowchart |
-| 3.2 Trajectory identification | 250 | Eq. 1–2 | Fig. 3 (in § 4.1) |
-| 3.3 Weather-normalised LST | 380 | Eq. 3–5′ | SI Fig. S1 β̂ |
+| 3.1 Framework overview | 220 | — | Fig. 2 flowchart |
+| 3.2 Trajectory identification | 240 | Eq. 1–2 | Fig. 3 (in § 4.1) |
+| 3.3 Weather-normalised LST + **Assumption B** | 460 | Eq. 3–5′ | SI Fig. S1 β̂ (forward ref to § 4.4) |
 | 3.4 Stable Reference Set + matching | 380 | Eq. 6–7 | SI Fig. S2 love plot |
-| 3.5 LUTHI index family | 460 | Eq. 8–13 | Fig. 5, Fig. 6 |
-| 3.6 Path-level SHAP attribution | 260 | spatial 5-fold CV | Fig. 7 |
-| 3.7 Heat Improvement Priority Index | 220 | Eq. 14 | Fig. 8 |
-| 3.8 Uncertainty quantification | 350 | Eq. 15–16 | Fig. 5 CI bars + SI Table S2 |
+| 3.5 LUTHI / HSI + **A1–A4 identification statement** | 620 | Eq. 8–11 | Fig. 5 |
+| 3.6 Path-level SHAP attribution | 260 | spatial 5-fold CV | Fig. 6 |
+| 3.7 Heat Improvement Priority Index (demoted) | 180 | Eq. 12 | Fig. 7 |
+| 3.8 Uncertainty quantification | 350 | Eq. 13–14 | Fig. 5 CI bars + SI Table S2 |
+| 3.9 Baseline-estimator comparisons | 290 | — | SI Table S4 |
 
-Inside § 3.5 keep the dedicated paragraph rebutting the "this is just
-difference-in-differences" reading (four-point argument: meteorology,
-matching, multi-scale conditioning, placebo).
+§ 3.5 must contain the A1–A4 paragraph (defence against objection a).
+§ 3.3 must contain the Assumption B paragraph (defence against
+objection b) with forward reference to § 4.4. Multi-scale LUTHI(r) and
+SSI are mentioned in a single sentence as "deferred to methodological
+supplement" (post-Q3).
 
-### § 4 Results (≈ 1 800 words, 7 subsections, each 1 figure or table)
+### § 4 Results (≈ 1 900 words, 7 subsections — multi-scale dropped, β̂-sensitivity and baseline-comparison added)
 
-| Sub | ≈ words | Headline number(s) — to be filled | Asset |
+| Sub | ≈ words | Headline number(s) — pre-registered | Asset |
 |---|---|---|---|
-| 4.1 LULC dynamics 2016 → 2025 | 220 | net Built-up Δ%, Green Δ%, dominant flows | Fig. 3, Table 3 |
-| 4.2 Raw vs weather-normalised LST trend | 250 | raw ΔLST, ΔWNSC; reduction factor | Fig. 4 |
-| 4.3 Path-level LUTHI | 340 | LUTHI_typ, LUTHI_ext per path with 95 % CI and placebo p | Fig. 5, Table 4 |
-| 4.4 Multi-scale + SSI | 260 | r*, sign and magnitude of SSI per path | Fig. 6, Table 5 |
-| 4.5 Path-stratified SHAP | 250 | top-3 modulating covariates per warming path | Fig. 7 |
-| 4.6 HIPI top-quartile map | 220 | % AOI flagged; intersection with pedestrian axis length | Fig. 8 |
-| 4.7 Second-city transferability | 260 | Spearman ρ of path LUTHI rankings | SI Table S3, SI Fig. S3 |
+| 4.1 LULC dynamics 2016 → 2025 | 200 | net Built-up Δ%, Green Δ%, dominant flows | Fig. 3, Table 3 |
+| 4.2 Raw vs weather-normalised LST trend | 220 | raw ΔLST ≈ +1.0 °C, ΔWNSC ≈ +0.4 °C, ratio ≤ 0.6 (H4) | Fig. 4 |
+| 4.3 Path-level LUTHI — *central result (α, β)* | 380 | LUTHI(Green→Built-up): typ +1.0, ext +2.8 °C; HSI +1.8 °C. LUTHI(Built-up→Green): typ −1.2, ext −0.3 °C; \|HSI\| < 0.5 °C | Fig. 5, Table 4 |
+| 4.4 β̂ specification sensitivity (defence b) | 240 | Spearman ρ ≥ 0.85 across 4 β̂ specs (H5) | SI Table S5 |
+| 4.5 Path-stratified SHAP | 240 | top-3 covariates modulating HSI per path | Fig. 6 |
+| 4.6 HIPI top-quartile map (demoted) | 180 | % AOI flagged; pedestrian-axis overlap length | Fig. 7 |
+| 4.7 Second-city transferability (required by Q1) | 240 | Spearman ρ ≥ 0.6 of LUTHI rankings; HSI sign agreement on ≥ 4 of top-5 paths | SI Table S3, SI Fig. S3 |
+| 4.8 Baseline-estimator comparison (defence a) | 200 | Asymmetry of α and β invisible under naïve / DiD / matching-only | SI Table S4 |
 
 ### § 5 Discussion (≈ 1 500 words, 6 paragraphs)
 
@@ -163,16 +169,17 @@ reproducibility sentence.
 
 | Claim or argument | Required asset | Status |
 |---|---|---|
-| State-vs-process bias quantification | Fig. 4 + Discussion ¶ 1 sidebar table | not produced |
-| Green→Built-up LUTHI positive, CI > 0 | Fig. 5, Table 4 (paths × scenario) | not produced |
-| HSI asymmetry | Fig. 5 (paired), Table 4 column HSI | not produced |
-| 300 m diagnostic scale | Fig. 6 + Table 5 + SSI column | not produced |
-| Path-modulating covariates | Fig. 7 path-stratified SHAP | not produced |
-| HIPI overlaps pedestrian axis | Fig. 8 + AOI walk-line GIS layer | not produced |
-| Method generalises to second city | SI Table S3 + SI Fig. S3 | not produced |
-| β̂ has expected signs | SI Fig. S1 / SI Table S1 | not produced |
-| Matching balance achieved | SI Fig. S2 love plot | not produced |
-| Placebo passes for headline paths | Table 4 placebo p column | not produced |
+| **α: Green→Built-up amplifies under extreme heat (HSI > 0)** | Fig. 5 + Table 4 HSI col | not produced |
+| **β: Built-up→Green cooling collapses under extreme heat (\|HSI\| small)** | Fig. 5 + Table 4 HSI col | not produced |
+| State-vs-process bias quantification | SI Table S4 + Discussion ¶ 1 sidebar | not produced |
+| Triple control removes ≥ 40 % of apparent decadal warming (H4) | Fig. 4 + side metric | not produced |
+| H1 — trajectory > end-state in partial R² | Fig. 6 SHAP + partial-R² table | not produced |
+| H5 — LUTHI rankings stable across β̂ specs (Spearman ρ ≥ 0.85) | SI Table S5 | not produced |
+| LUTHI vs baseline estimators differ in detecting α/β asymmetry | SI Table S4 | not produced |
+| Method generalises to second city (Spearman ρ ≥ 0.6) | SI Table S3 + SI Fig. S3 | not produced |
+| Matching balance achieved (|SMD| < 0.1) | SI Fig. S2 love plot | not produced |
+| Placebo passes for headline paths (p > 0.05) | Table 4 placebo *p* col | not produced |
+| HIPI overlaps pedestrian axis (applied, demoted) | Fig. 7 + AOI walk-line | not produced |
 
 ---
 

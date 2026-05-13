@@ -28,18 +28,27 @@ def test_path_luthi_weighted_aggregation():
     assert out.loc[20] == 5.0
 
 
-def test_hsi_and_ssi():
+def test_hsi():
     typ = pd.Series([0.5, 1.0], index=["A", "B"])
     ext = pd.Series([1.5, 1.2], index=["A", "B"])
     h = hsi(typ, ext)
     assert np.allclose(h.values, [1.0, 0.2])
 
+
+def test_ssi_deprecated_but_still_correct():
+    """SSI was retired from the headline analysis (Q3 lock); the function
+    survives for the methodological supplement and must still compute the
+    centred finite difference correctly, while emitting DeprecationWarning."""
+    import warnings
     by_scale = {
         100: pd.Series([1.0], index=["A"]),
         300: pd.Series([2.0], index=["A"]),
         500: pd.Series([2.5], index=["A"]),
     }
-    s = ssi(by_scale, r_star=300)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        s = ssi(by_scale, r_star=300)
+    assert any(issubclass(w.category, DeprecationWarning) for w in caught)
     assert abs(s.loc["A"] - (2.5 - 1.0) / 400) < 1e-9
 
 

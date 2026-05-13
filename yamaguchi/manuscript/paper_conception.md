@@ -9,45 +9,61 @@
 
 ---
 
-## 1. Title candidates
+## 0. Locked decisions (post-Socratic Q1–Q4)
 
-1. **LUTHEA: A Quasi-Causal Attribution Framework for Land-Use Transition-Driven Urban Heat Change Using Multi-Source Satellite Data**  *(primary)*
-2. Beyond State, Toward Trajectory: A Multi-Scale Land-Use Transition Heat Impact Index (LUTHI) for Compact Japanese Cities
-3. Weather-Normalised Attribution of Decadal Land-Use Transitions to Urban Heat Exposure in a Compact Japanese City
-4. Disentangling Typical and Extreme Summer Heat Responses to Land-Use Transitions: A Multi-Scale Remote Sensing Framework
+| Slot | Decision |
+|---|---|
+| **Q1 — Identity** | **Method-first** (Option A). Abstract opens with "We introduce LUTHEA…"; Methods budget 3 000 words; second-city replication is **required**, not optional; HIPI is demoted to applied demo. |
+| **Q2 — Most-feared rejection** | (a) *"LUTHI is dressed-up DiD"* + (b) *"Spatially-uniform β̂ is biophysically untenable"*. Defences pre-positioned: identification statement A1–A4 in § 6.5; Assumption B in § 6.3; baseline-comparison SI table; β̂-sensitivity sub-result § 7.x. |
+| **Q3 — Subtraction** | Cut **multi-scale SSI** (∂LUTHI/∂r). Neighbourhood radii 100/300/500 m **remain** as matching covariates; LUTHI itself is computed at a single default radius (300 m). H4 (300 m as diagnostic scale) is dropped; Fig. 6 and Table 5 are removed; main figures shrink to 7, main tables to 4. |
+| **Q4 — Central claim** | **Asymmetric, state-dependent transition effects.** α: HSI(Green→Built-up) ≈ +1.8 °C (≈180 % amplification under extreme heat). β: HSI(Built-up→Green) ≈ −0.2 °C (cooling potential collapses under extreme heat). Together they form the manuscript's take-home: *the marginal heat impact of land-use transitions is non-symmetric and only visible under typical/extreme stratification, which state-based analyses cannot deliver*. |
 
-Decision rule: **Title 1** for *Remote Sensing* (method-first); switch to
-**Title 3** if redirected to *Urban Climate* (case-driven, climate-framed).
+Word-budget reconciliation: Methods 2 500 → **3 000**; Results 1 800 → **1 900**; total ≈ 8 900.
 
 ---
 
-## 2. Abstract (≈ 240 words, draft)
+## 1. Title candidates
 
-> Rapid land-use/land-cover (LULC) change in compact mid-sized cities
-> reshapes urban surface heat in ways that conventional state-based
-> remote-sensing analyses tend to under-resolve. We propose **LUTHEA**, a
-> Land-Use Transition-based Heat Exposure Attribution framework, that
-> treats LULC change as a process (trajectory) rather than a state. The
-> framework integrates a per-pixel **Land-Use Transition Heat Impact Index
-> (LUTHI)** computed from weather-normalised, Landsat 8/9 Collection 2
-> Level-2 surface temperature against a 10 m Dynamic World–derived
-> trajectory raster, with **triple control**: a Stable Reference Set
-> providing per-class counterfactuals (temporal control), shared β̂
-> projection of overpass-time meteorological covariates (meteorological
-> control), and multi-scale Mahalanobis kNN matching on baseline
-> biophysical and neighbourhood covariates (spatial control).
-> Uncertainty is quantified by bootstrap 95 % confidence intervals and
-> a within-class placebo test, supporting a quasi-causal interpretation.
-> Path-level XGBoost attribution with stratified SHAP partitions LUTHI
-> across transitions; a Heat Improvement Priority Index (HIPI) translates
-> the attribution into a planning-ready raster. We apply the framework to
-> the central district of Yamaguchi City, Japan (2016–2025), and provide
-> a transferability check on a second compact city. We report which
-> decadal transitions contributed most to summer surface heat, how
-> contributions diverge between typical and extreme summer days, and
-> where heat mitigation is most cost-effective. The pipeline is released
-> as an open Python package applicable to any city with Dynamic World
-> and Landsat coverage.
+1. **LUTHEA: A Quasi-Causal Attribution Framework for Land-Use Transition-Driven Urban Heat Change Using Multi-Source Satellite Data**  *(primary, locked)*
+2. Beyond State, Toward Trajectory: A Land-Use Transition Heat Impact Index (LUTHI) for Compact Japanese Cities
+3. Weather-Normalised Attribution of Decadal Land-Use Transitions to Urban Heat Exposure in a Compact Japanese City *(fallback if redirected to Urban Climate)*
+4. Asymmetric and State-Dependent Heat Impacts of Land-Use Transitions Under Typical vs Extreme Summer Conditions
+
+Decision rule (locked): **Title 1**.
+
+---
+
+## 2. Abstract (≈ 250 words, draft — method-first per Q1 lock)
+
+> **We introduce LUTHEA**, a Land-Use Transition-based Heat Exposure
+> Attribution framework that converts the conventional state-based
+> correlation between land-use/land-cover (LULC) change and urban
+> surface temperature into a **quasi-causal attribution** at the pixel
+> level. LUTHEA replaces "what is the LULC class" with "what was the
+> LULC transition pathway", and conditions the attribution on three
+> independent controls: (i) a Stable Reference Set of co-class pixels
+> supplies a per-class counterfactual temporal trajectory; (ii) a
+> shared coefficient projection of overpass-time meteorological
+> covariates removes inter-annual atmospheric noise from the Landsat
+> 8/9 Collection 2 Level-2 surface-temperature record; (iii)
+> Mahalanobis k-nearest-neighbour matching on baseline biophysical and
+> multi-scale neighbourhood covariates enforces covariate balance
+> between transition and reference pixels. The framework yields a
+> family of estimators — the **Land-Use Transition Heat Impact Index
+> (LUTHI)** for each transition and scenario, and a **Heat-Stress
+> Sensitivity Index (HSI)** that recasts the typical-vs-extreme contrast
+> as a triple-difference — with bootstrap percentile confidence intervals
+> and a within-class placebo test as formal falsification. We apply
+> LUTHEA to the central district of Yamaguchi City, Japan (2016–2025),
+> with a parallel replication on a second compact Japanese city as a
+> transferability check, and we benchmark LUTHI against a naïve
+> state contrast and a standard difference-in-differences estimator on
+> identical pixels. Our central finding is that the marginal heat impact
+> of LULC transitions is **non-symmetric and state-dependent**: warming
+> pathways amplify under extreme summer heat while cooling pathways
+> blunt — a pattern that state-based analyses cannot detect. The full
+> pipeline is released as an open-source Python package applicable to
+> any city with Dynamic World and Landsat coverage.
 
 ---
 
@@ -60,15 +76,17 @@ Decision rule: **Title 1** for *Remote Sensing* (method-first); switch to
 > characteristics**, and how do these contributions differ between
 > **typical and extreme** summer days?
 
-### Hypotheses
+### Hypotheses (updated post-Q4)
 
-| ID | Statement | Test |
-|---|---|---|
-| H1 | Trajectory has higher explanatory power than end-state LULC for ΔLST. | XGBoost feature-importance ranking; partial R² after removing trajectory one-hot vs after removing end-state one-hot. |
-| H2 | Green→Built-up and Bare→Built-up yield LUTHI > 0 with 95 % CIs not crossing zero; Built-up→Green yields LUTHI < 0. | Path-level LUTHI bootstrap CIs. |
-| H3 | The extreme-vs-typical asymmetry (HSI) is positive and larger for warming transitions than for cooling transitions. | Sign + magnitude of HSI per path; paired comparison. |
-| H4 | LUTHI is most diagnostic at the 300 m neighbourhood scale (intermediate). | SSI = ∂LUTHI/∂r evaluated at r = 300 m; sign change between 100 m and 500 m. |
-| H5 | After triple control, the residual decadal LST trend at the city centre is materially smaller than the raw difference, indicating that prior literature overstates the LULC-only effect by failing to control meteorology. | Compare raw ΔLST vs ΔLST_norm summary statistics. |
+| ID | Statement | Quantitative bet | Test |
+|---|---|---|---|
+| H1 | Trajectory has higher explanatory power than end-state LULC for ΔLST. | Partial R² gain ≥ 0.15. | XGBoost partial-R² after removing trajectory one-hot vs after removing end-state one-hot. |
+| H2 (α) | **Green→Built-up amplifies under extreme heat.** | LUTHI_ext ≈ +2.5 to +3.0 °C; HSI ≈ +1.5 to +2.0 °C (≈150–200 % amplification over typical). | Path-level LUTHI bootstrap CIs in two scenarios + HSI sign test. |
+| H3 (β) | **Built-up→Green's cooling potential collapses under extreme heat.** | LUTHI_typ ≈ −1.0 to −1.5 °C; LUTHI_ext closer to −0.2 to −0.5 °C; \|HSI\| < 0.5 °C. | Same as H2 with paired |HSI| comparison. |
+| H4 | Triple control removes a substantial share of apparent decadal warming. | ΔWNSC / ΔLST_raw ≤ 0.6. | Compare raw ΔLST vs ΔWNSC at city-centre means with bootstrap difference test. |
+| H5 | LUTHI rankings are stable across β̂ specifications (defence for review-objection b). | Spearman ρ ≥ 0.85 between global, per-class, GWR, and quantile-conditioned β̂. | Sensitivity § 7.x; SI Table S5. |
+
+(H4 of the previous draft — 300 m diagnostic neighbourhood scale — was retired in the Q3 cut.)
 
 ---
 
@@ -141,11 +159,11 @@ typical-day and extreme-day medians yield the WNSC fields (Eq. 5).
 we draw matched neighbours from the Stable Reference Set under
 Mahalanobis distance over baseline covariates (Eq. 6–7) and verify
 balance via standardised mean differences. **Layer 4 — Attribution.** The
-LUTHI estimator (Eq. 8–11) and its derived indices HSI (Eq. 12) and SSI
-(Eq. 13) are computed at pixel and path level, with bootstrap percentile
-CIs and a placebo test (Section 6.7). **Layer 5 — Application.** A Heat
-Improvement Priority Index ranks 30 m cells by their marginal mitigation
-potential (Eq. 14).
+LUTHI estimator (Eq. 8–10) and its triple-difference companion HSI
+(Eq. 11) are computed at pixel and path level, with bootstrap
+percentile CIs and a placebo test (Section 6.7). **Layer 5 —
+Application.** A Heat Improvement Priority Index ranks 30 m cells by
+their marginal mitigation potential (Eq. 12).
 
 ### 6.2 Trajectory identification
 
@@ -207,6 +225,17 @@ $$
 Cells with fewer than two valid scenes in a (year, scenario) pair are set
 to NaN.
 
+**Assumption B (defence against review-objection b).** Eq. 4 enforces a
+single global $\boldsymbol\beta$ across the AOI; this trades local
+fidelity for sample size. We test sensitivity to this choice in § 7.x
+under three alternative specifications: (i) per-class $\boldsymbol\beta_k$
+fit on each initial dominant class; (ii) geographically weighted
+$\boldsymbol\beta(p)$ with a 500 m bandwidth; (iii) quantile-conditioned
+$\boldsymbol\beta_q$ on initial NDVI / albedo deciles. We report the
+Spearman rank correlation of path-level LUTHI rankings across all four
+specifications (hypothesis H5) and adopt the global $\hat{\boldsymbol\beta}$
+as the headline only if $\rho \ge 0.85$.
+
 ### 6.4 Stable Reference Set and matching
 
 The Stable Reference Set (SRS) for class $k$ is
@@ -262,27 +291,54 @@ $$
 {\sum_{p^* \in T_{k\to j}} w_{p^*}}. \tag{10}
 $$
 
-The multi-scale variant repeats Eq. 7–10 under three neighbourhood radii
-$r \in \mathcal{R} = \{100, 300, 500\}$ m:
+The headline LUTHI is reported at the 300 m neighbourhood radius for
+matching covariates; multi-scale LUTHI(r) and its derivative
+(deprecated SSI) are deferred to a methodological supplement and not
+used as primary results, by the Q3 parsimony decision.
+
+The **Heat-Stress Sensitivity Index** quantifies how the per-path
+attribution responds to a shift from typical to extreme summer
+conditions, with the algebraic form of a triple difference (time ×
+treatment × scenario):
 
 $$
-\text{LUTHI}^{k \to j}_{(s)}(r), \quad r \in \mathcal{R}. \tag{11}
+\text{HSI}^{k \to j} =
+\text{LUTHI}^{k \to j}_{(\text{ext})} - \text{LUTHI}^{k \to j}_{(\text{typ})}. \tag{11}
 $$
 
-Two derived indices:
+#### Identification statement (defence against review-objection a)
 
-$$
-\text{HSI}^{k \to j}(r) =
-\text{LUTHI}^{k \to j}_{(\text{ext})}(r) - \text{LUTHI}^{k \to j}_{(\text{typ})}(r). \tag{12}
-$$
+LUTHI is a **matching-augmented difference-in-differences** estimator
+operating on a quasi-experimental design. Its credibility relies on
+four named assumptions, three of which are tested empirically in
+this paper:
 
-$$
-\text{SSI}^{k \to j}_{(s)} \big|_{r^*} =
-\frac{\text{LUTHI}^{k \to j}_{(s)}(r^+) - \text{LUTHI}^{k \to j}_{(s)}(r^-)}
-{r^+ - r^-}, \tag{13}
-$$
+- **A1 (parallel trends).** The expected counterfactual trajectory of
+  treated pixels in the absence of transition equals the observed
+  trajectory of matched stable pixels of the same class. *Tested* by
+  the within-class placebo (Eq. 14 below).
+- **A2 (conditional unconfoundedness).** After Mahalanobis kNN matching
+  on $\mathbf{z}_p$, treatment assignment is independent of potential
+  outcomes. *Tested* by per-covariate standardised mean differences;
+  |SMD| < 0.1 is required.
+- **A3 (multi-scale conditioning).** Path effects are stable across
+  neighbourhood radii used in the matching covariate set
+  $r \in \{100, 300, 500\}$ m. *Tested* by re-running the matching
+  with each radius held fixed and reporting Spearman ρ of resulting
+  LUTHI rankings; this is a structural feature of LUTHEA absent from
+  standard DiD.
+- **A4 (triple-difference identification of HSI).** Eq. 11 reads as a
+  three-way contrast over (time × treatment × scenario); under the
+  scenario-exogeneity assumption (typical vs extreme heat regimes are
+  exchangeable conditional on $\mathbf{z}_p$), HSI is identified
+  independently of any time-invariant pixel-level confounder.
+  *Tested* by re-estimating HSI on placebo (within-class) splits
+  stratified by scenario.
 
-where $r^\pm$ are the neighbours of $r^*$ in $\mathcal{R}$.
+We make the dressed-up-DiD critique explicit, and demonstrate
+quantitative value-add of LUTHEA over (i) a naïve state contrast,
+(ii) standard DiD with no matching, and (iii) propensity matching
+without weather normalisation, on the same pixels, in SI Table S4.
 
 ### 6.6 Heat Improvement Priority Index (HIPI)
 
@@ -293,7 +349,7 @@ $$
 \text{HIPI}_p = w_1 \, z(\text{WNSC}_p^{(t_1,\text{typ})})
             + w_2 \, z(-\text{PLAND}_{\text{Green},p}^{(300m)})
             + w_3 \, z(\text{HSI}_{p}^{\text{local}})
-            + w_4 \, z(\rho_{\text{walk}, p}). \tag{14}
+            + w_4 \, z(\rho_{\text{walk}, p}). \tag{12}
 $$
 
 Weights are taken from the loadings of the first principal component of
@@ -311,7 +367,7 @@ quantiles for the percentile $1 - \alpha$ CI:
 
 $$
 [\text{LUTHI}^{k \to j}_{(s)}]_{1-\alpha} =
-\bigl[ Q_{\alpha/2}(\hat\theta^*_b), \ Q_{1-\alpha/2}(\hat\theta^*_b) \bigr]. \tag{15}
+\bigl[ Q_{\alpha/2}(\hat\theta^*_b), \ Q_{1-\alpha/2}(\hat\theta^*_b) \bigr]. \tag{13}
 $$
 
 A within-class **placebo test** validates the quasi-causal interpretation:
@@ -323,7 +379,7 @@ for a real path is
 $$
 p^{\text{plc}}_{k \to j, s} =
 \Pr_{\text{splits}}\bigl(|\text{LUTHI}^{\text{placebo}, (s)}_{k}|
-\geq |\text{LUTHI}^{k \to j}_{(s)}| \bigr). \tag{16}
+\geq |\text{LUTHI}^{k \to j}_{(s)}| \bigr). \tag{14}
 $$
 
 We treat $p^{\text{plc}} > 0.05$ as a passing diagnostic; failures
@@ -355,28 +411,49 @@ sub-pixel dominance shifts. Hypothesised: Built-up +X %, Agriculture
 ΔLST 2016→2025 vs ΔWNSC. Hypothesised: raw +0.8–1.5 °C, normalised
 +0.3–0.7 °C, demonstrating substantial meteorological inflation.
 
-**7.3 LUTHI per path (Fig. 5, Table 4).** Bar chart with bootstrap 95 %
-CIs and placebo $p$ for both typical and extreme scenarios.
-Hypothesised:
-- Green→Built-up: +1.0 to +2.0 °C (typ), +1.5 to +3.0 °C (ext);
-- Bare→Built-up: similar or slightly larger in ext;
-- Built-up→Green: −0.5 to −1.5 °C (typ), asymmetrically attenuated in ext;
-- Built-up→Built-up: ~0 °C (sanity check).
+**7.3 LUTHI per path (Fig. 5, Table 4) — *central result***. Bar chart
+with bootstrap 95 % CIs and placebo $p$ for both typical and extreme
+scenarios. Pre-registered headline predictions (post-Q4):
+- *Hypothesis α — amplification.* Green→Built-up: LUTHI_typ ≈ +1.0 °C,
+  LUTHI_ext ≈ +2.5 to +3.0 °C, HSI ≈ +1.5 to +2.0 °C (≈150–200 % amplification).
+- *Hypothesis β — collapse.* Built-up→Green: LUTHI_typ ≈ −1.0 to −1.5 °C,
+  LUTHI_ext ≈ −0.2 to −0.5 °C, |HSI| < 0.5 °C — cooling potential
+  blunted exactly when most needed.
+- Bare→Built-up: comparable or slightly larger than Green→Built-up in
+  the extreme scenario.
+- Built-up→Built-up: ≈ 0 °C (sanity check; if non-zero, flag as residual
+  confounding and discuss).
 
-**7.4 Multi-scale LUTHI and SSI (Fig. 6, Table 5).** LUTHI(r) curves;
-identify r* where SSI peaks (hypothesis: r* = 300 m).
+**7.4 β̂ specification sensitivity (Table S5; defence for review-objection b).**
+Re-estimate LUTHI under four weather-normalisation regimes — global
+$\hat{\boldsymbol\beta}$, per-class $\hat{\boldsymbol\beta}_k$, GWR
+$\hat{\boldsymbol\beta}(p)$, and quantile-conditioned
+$\hat{\boldsymbol\beta}_q$. Report the Spearman rank correlation of
+path-level LUTHI orderings. Headline acceptance: $\rho \ge 0.85$ across
+all six pairwise comparisons (H5).
 
-**7.5 Path-stratified SHAP (Fig. 7).** Show that initial PLAND_Green and
+**7.5 Path-stratified SHAP (Fig. 6).** Show that initial PLAND_Green and
 distance-to-water modulate Green→Built-up impact strongly but barely
-affect Built-up→Built-up.
+affect Built-up→Built-up; document which baseline conditions amplify
+the HSI asymmetries above.
 
-**7.6 HIPI map (Fig. 8).** Top-quartile cells overlaid on the
+**7.6 HIPI map (Fig. 7).** Top-quartile cells overlaid on the
 山口駅 ↔ 湯田温泉 pedestrian axis. Discuss which segments of the
-中央商店街 receive highest priority and why.
+中央商店街 receive highest priority and why. *Demoted to applied
+illustration; not the paper's primary deliverable.*
 
-**7.7 Transferability (SI table + 1 SI figure).** Replicate Section 7.3
-on the second case city. Report Spearman rank correlation of path-level
-LUTHI rankings across the two cities.
+**7.7 Transferability (SI Table S3 + SI Fig. S3) — *required by method-first framing***.
+Replicate Section 7.3 on the second case city. Report Spearman rank
+correlation of path-level LUTHI rankings across the two cities and the
+agreement of HSI sign per path. Acceptance: $\rho \ge 0.6$ for LUTHI;
+sign agreement on at least 4 of the top-5 paths.
+
+**7.8 Comparison to baseline estimators (SI Table S4; defence for review-objection a).**
+Recompute the attribution under (i) naïve mean-LST contrast by
+end-state class, (ii) standard DiD without matching, (iii) propensity
+matching without weather normalisation. Report bias and direction
+versus LUTHI; demonstrate that the asymmetry of α and β is invisible
+under (i)–(iii).
 
 ---
 
@@ -408,10 +485,12 @@ LUTHI rankings across the two cities.
 2. Dynamic World class confusion in mixed pixels — partly addressed by
    the dominant-PLAND threshold and cross-validation against ESA
    WorldCover 2020/2021.
-3. β̂ assumes a globally shared meteorological response; spatial
-   heterogeneity in this slope (e.g. impervious cores vs vegetated
-   pockets) is not modelled. Future work can adopt a hierarchical
-   spatially varying coefficient model.
+3. β̂ assumes a globally shared meteorological response. Sensitivity
+   analysis in § 7.4 demonstrates that LUTHI path rankings are stable
+   (Spearman ρ ≥ 0.85) across global, per-class, GWR(500 m), and
+   quantile-conditioned β̂ specifications. A fully spatially-varying
+   coefficient (hierarchical SVCM / Bayesian) extension is left to
+   future work.
 4. Placebo test relies on random within-class splits; correlated spatial
    structure may inflate within-class variance, biasing the test toward
    accepting larger LUTHI as significant. We report block-cluster
@@ -424,17 +503,21 @@ LUTHI rankings across the two cities.
 
 ## 10. Conclusion (one-paragraph anchor for the manuscript)
 
-> Treating LULC change as a process rather than a state, and conditioning
-> the attribution on overpass-time meteorology and pre-existing
-> biophysical context, materially sharpens the inferred contribution of
-> individual urban transitions to summer surface heat. In Yamaguchi's
-> central district, [N] of [M] identified transition pathways pass our
-> placebo and bootstrap tests; the largest single contribution comes
-> from [path] under extreme summer conditions, and the largest mitigation
-> potential is identified along the central pedestrian axis. The LUTHEA
-> framework, its LUTHI / HSI / SSI / HIPI index family, and the
-> accompanying open-source implementation are directly applicable to
-> any city with concurrent Dynamic World and Landsat coverage.
+> Treating LULC change as a process rather than a state, and
+> conditioning the attribution on overpass-time meteorology, baseline
+> biophysical context, and matched stable references, materially
+> sharpens the inferred contribution of individual urban transitions to
+> summer surface heat. The central, pre-registered finding is that
+> these contributions are **non-symmetric and state-dependent**: in
+> Yamaguchi's central district, Green→Built-up amplifies under extreme
+> heat by roughly a factor of [HSI/LUTHI_typ], while Built-up→Green
+> shows a near-complete collapse of cooling potential under the same
+> conditions. This asymmetry is invisible to state-based and
+> non-meteorology-controlled analyses, as demonstrated against three
+> baseline estimators on identical pixels. The LUTHEA framework, its
+> LUTHI / HSI / HIPI index family, and the accompanying open-source
+> Python implementation are directly applicable to any city with
+> concurrent Dynamic World and Landsat coverage.
 
 ---
 
@@ -450,12 +533,14 @@ LUTHI rankings across the two cities.
 - **Fig. 4.** (a) Raw ΔLST 2016→2025; (b) ΔWNSC under triple control;
   (c) per-pixel difference between (a) and (b), highlighting the
   meteorological inflation removed.
-- **Fig. 5.** Path-level LUTHI bars with bootstrap 95 % CIs and placebo
-  *p*-values; typical (blue) and extreme (red) scenarios side by side.
-- **Fig. 6.** Multi-scale LUTHI(r) curves for the top 6 paths; r* and
-  SSI overlay.
-- **Fig. 7.** (a) Global SHAP beeswarm; (b) path-stratified SHAP heat-map.
-- **Fig. 8.** HIPI top-quartile cells over the pedestrian axis; inset
+- **Fig. 5.** *Central result.* Path-level LUTHI bars with bootstrap
+  95 % CIs and placebo *p*-values; typical (blue) and extreme (red)
+  scenarios side by side; HSI annotation per path. The α and β
+  asymmetries should read off the figure at a glance.
+- **Fig. 6.** (a) Global SHAP beeswarm; (b) path-stratified SHAP
+  heat-map highlighting which baseline conditions modulate the
+  HSI asymmetry.
+- **Fig. 7.** HIPI top-quartile cells over the pedestrian axis; inset
   showing one priority corridor at street level.
 
 | Table | Content |
@@ -463,8 +548,18 @@ LUTHI rankings across the two cities.
 | 1 | Data sources: product, native resolution, temporal coverage, role |
 | 2 | Day-selection thresholds and final dates (typical + extreme) |
 | 3 | Transition paths: area, pixel count, validity rate |
-| 4 | Path LUTHI (typ / ext / HSI) with bootstrap CI and placebo *p* |
-| 5 | Multi-scale LUTHI(r) and SSI |
+| 4 | *Central table.* Path LUTHI (typ / ext / HSI) with bootstrap CI and placebo *p* |
+
+**Supplementary material**
+
+| SI item | Content |
+|---|---|
+| Fig. S1 | β̂ coefficients ± SE; per-class and GWR variants |
+| Fig. S2 | Love plot — standardised mean differences pre/post matching |
+| Fig. S3 | Second-city replication, equivalent of Fig. 5 |
+| Table S3 | Second-city LUTHI table (parallel to Table 4) + Spearman ρ |
+| Table S4 | LUTHI vs baseline estimators (naïve / DiD / matching-only) |
+| Table S5 | LUTHI rankings across β̂ specifications (defence for objection b) |
 
 ---
 
