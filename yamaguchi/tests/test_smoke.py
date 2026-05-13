@@ -1,6 +1,7 @@
-"""Smoke tests: package importable and CLI subcommands wired."""
+"""Smoke tests: package importable, CLI wired, config sane."""
 
 import subprocess
+import sys
 
 
 def test_import():
@@ -9,7 +10,7 @@ def test_import():
 
 
 def test_cli_help():
-    res = subprocess.run(["python", "-m", "luthea.cli", "--help"],
+    res = subprocess.run([sys.executable, "-m", "luthea.cli", "--help"],
                          capture_output=True, text=True)
     assert res.returncode == 0
 

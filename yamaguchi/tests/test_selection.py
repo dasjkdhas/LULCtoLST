@@ -1,0 +1,30 @@
+"""Tests for typical/extreme day selection."""
+
+import pandas as pd
+
+from luthea.lst.selection import label_days
+
+
+def _row(t_max, sunshine_h=10.0, wind=1.0, precip=0.0, cumrain=0.0, cloud=0.0):
+    return dict(t_max=t_max, sunshine_h=sunshine_h, overpass_wind=wind,
+                precip_mm=precip, cumrain_48h=cumrain, scene_cloud_pct=cloud)
+
+
+def test_label_days_distinguishes_typical_and_extreme():
+    df = pd.DataFrame([
+        _row(31.5),                # typical
+        _row(36.0),                # extreme
+        _row(28.0),                # neither (too cool)
+        _row(31.0, sunshine_h=5),  # typical fails sunshine
+        _row(31.0, precip=2.0),    # rain disqualifies
+        _row(36.0, wind=5.0),      # windy disqualifies extreme
+    ])
+    out = label_days(df)
+    assert out["is_typical"].tolist() == [True, False, False, False, False, False]
+    assert out["is_extreme"].tolist() == [False, True, False, False, False, False]
+
+
+def test_label_days_missing_column_raises():
+    import pytest
+    with pytest.raises(ValueError):
+        label_days(pd.DataFrame({"t_max": [30.0]}))
