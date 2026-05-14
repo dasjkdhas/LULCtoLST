@@ -99,7 +99,10 @@ def matching_only(covariates: pd.DataFrame, transitions: pd.DataFrame,
         treated_delta = delta.reindex(treated_idx).to_numpy()
         out[(int(ks), int(ke))] = float(np.nanmean(treated_delta - cf))
 
-    return pd.Series(out, name="matching_only").rename_axis("path")
+    if not out:
+        return pd.Series([], name="matching_only", dtype=float)
+    idx = pd.Index(list(out.keys()), name="path", tupleize_cols=False)
+    return pd.Series(list(out.values()), index=idx, name="matching_only")
 
 
 def assemble_comparison(luthi: pd.Series, naive: pd.Series,

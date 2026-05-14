@@ -40,6 +40,11 @@ luthea = "luthea.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.pytest.ini_options]
+markers = [
+  "integration: end-to-end tests that exercise multiple modules; slower than unit tests",
+]
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"
