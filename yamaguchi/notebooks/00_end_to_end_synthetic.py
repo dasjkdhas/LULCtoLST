@@ -476,3 +476,74 @@ print(f"[Stage 10] Partial R² drop when trajectory one-hots removed: "
 # before any real-data Yamaguchi run.
 
 print("\n[done] Synthetic end-to-end pipeline ran to completion.")
+
+
+# %% [markdown]
+# ## Stage 11 — Render Fig 3, 4, 5, 6, 7 from synthetic outputs
+
+# %% Figures
+import matplotlib
+matplotlib.use("Agg")  # headless
+
+from luthea.attribution.hipi import compute_hipi, priority_quartiles
+from luthea.lulc.transitions import summarise_transitions
+from luthea.viz.figures import (fig3_lulc_and_sankey, fig4_wnsc_change,
+                                  fig5_luthi_bars, fig6_shap, fig7_hipi)
+from luthea.viz.sankey import plot_sankey
+
+FIG_DIR = Path(__file__).resolve().parents[1] / "figures" / "synthetic"
+FIG_DIR.mkdir(parents=True, exist_ok=True)
+
+# Fig 3
+trans_summary = summarise_transitions(transitions)
+fig3_lulc_and_sankey(t0_labels, t1_labels, trans_summary,
+                     out=FIG_DIR / "fig3_lulc.png")
+plot_sankey(trans_summary, out_html=FIG_DIR / "fig3_sankey.html")
+
+# Fig 4 — use the first (typical) scene of each epoch as the "raw" reference
+t0_first_typ_idx = next(i for i, r in enumerate(scene_records)
+                         if r["epoch"] == "t0" and r["scenario"] == "typical")
+t1_first_typ_idx = next(i for i, r in enumerate(scene_records)
+                         if r["epoch"] == "t1" and r["scenario"] == "typical")
+raw_t0 = build_scene(dom_start, scene_records[t0_first_typ_idx],
+                     np.zeros_like(dom_start, dtype=float))
+raw_t1 = build_scene(dom_end, scene_records[t1_first_typ_idx],
+                     treatment_field("typical"))
+fig4_wnsc_change(raw_t1 - raw_t0, WNSC_t1_typ - WNSC_t0_typ,
+                 out=FIG_DIR / "fig4_wnsc.png")
+
+# Fig 5 — central
+df5 = pd.DataFrame({
+    "LUTHI_typ":   luthi_typ_path,
+    "LUTHI_ext":   luthi_ext_path,
+    "ci_low_typ":  boot_typ["ci_low"],
+    "ci_high_typ": boot_typ["ci_high"],
+    "ci_low_ext":  boot_ext["ci_low"],
+    "ci_high_ext": boot_ext["ci_high"],
+    "HSI":         hsi_path,
+    "placebo_p":   placebo["placebo_p"],
+}).dropna(subset=["LUTHI_typ", "LUTHI_ext"])
+df5.index = [str(i) for i in df5.index]
+fig5_luthi_bars(df5.reset_index().rename(columns={"index": "path"}),
+                out=FIG_DIR / "fig5_luthi.png",
+                headline_paths=["(1, 6)", "(6, 1)"])
+
+# Fig 6 — SHAP
+gsum = global_summary(shap_vals, list(X.columns))
+fig6_shap(gsum, long_shap, out=FIG_DIR / "fig6_shap.png")
+
+# Fig 7 — HIPI
+# Need PLAND_Green and HSI_local at pixel level
+pland_green = (ds_t1["PLAND_1"].to_numpy() + ds_t1["PLAND_2"].to_numpy()).ravel()
+hsi_local = pd.Series(0.0, index=trans_df.index)
+for path, val in hsi_path.items():
+    mask = (trans_df["dom_start"] == path[0]) & (trans_df["dom_end"] == path[1])
+    hsi_local.loc[mask] = val
+walk = RNG.uniform(0, 1, len(trans_df))
+hipi_arr, w = compute_hipi(WNSC_t1_typ.ravel(), pland_green,
+                           hsi_local.to_numpy(), walk)
+hipi_2d = hipi_arr.reshape(WNSC_t1_typ.shape)
+quart = priority_quartiles(hipi_2d, mask_built=(dom_end == BUILT))
+fig7_hipi(hipi_2d, quart, out=FIG_DIR / "fig7_hipi.png")
+
+print(f"[Stage 11] Figures written to {FIG_DIR}")
