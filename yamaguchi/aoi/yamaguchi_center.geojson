@@ -1,0 +1,69 @@
+{
+  "type": "FeatureCollection",
+  "name": "yamaguchi_center",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "EPSG:4326"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "city": "yamaguchi",
+        "area_km2": 11.103,
+        "landmarks": [
+          {
+            "name": "山口駅",
+            "lon": 131.4733,
+            "lat": 34.1745
+          },
+          {
+            "name": "湯田温泉",
+            "lon": 131.455,
+            "lat": 34.174
+          },
+          {
+            "name": "中央商店街",
+            "lon": 131.4747,
+            "lat": 34.18
+          },
+          {
+            "name": "県庁",
+            "lon": 131.469,
+            "lat": 34.186
+          }
+        ],
+        "source": "build_aoi_polygons.py — bounding box over landmarks"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              131.45,
+              34.166
+            ],
+            [
+              131.488,
+              34.166
+            ],
+            [
+              131.488,
+              34.1945
+            ],
+            [
+              131.45,
+              34.1945
+            ],
+            [
+              131.45,
+              34.166
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
