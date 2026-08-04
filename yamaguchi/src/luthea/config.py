@@ -19,7 +19,31 @@ TAB_DIR = PROJECT / "tables"
 # ── Study window ─────────────────────────────────────────────────────────
 YEAR_START = 2016
 YEAR_END = 2025
-SUMMER_MONTHS = (7, 8)        # primary; widen to 6–9 if scenes are sparse
+SUMMER_MONTHS = (7, 8)        # peak summer; June is 梅雨, September is typhoon
+                              # season in western Japan, so both are excluded
+
+# ── Epoch design ─────────────────────────────────────────────────────────
+# The cloud-screened Landsat 8/9 record over the Yamaguchi AOI yields only
+# 18 usable summer scenes across 2016–2025, and five individual years
+# contribute a single scene each. Single-year WNSC composites therefore
+# collapse to NaN under the min_obs = 2 guard, and would collapse further
+# once stratified into typical / extreme scenarios.
+#
+# The contrast is consequently defined between three-year *epochs* rather
+# than single years. This both restores statistical power and matches the
+# manuscript's decadal framing.
+#
+#   t0 = 2016–2018   (6 scenes)
+#   t1 = 2023–2025   (8 scenes)
+#   mid = 2019–2022  (4 scenes; trend/robustness only, not in the contrast)
+EPOCH_EARLY = (2016, 2017, 2018)
+EPOCH_LATE = (2023, 2024, 2025)
+EPOCH_MID = (2019, 2020, 2021, 2022)
+
+# Minimum scenes required per (epoch × scenario) cell before a composite
+# is considered valid; cells below this threshold are reported as NaN and
+# flagged in the scene inventory.
+MIN_SCENES_PER_EPOCH_SCENARIO = 2
 
 # ── CRS ──────────────────────────────────────────────────────────────────
 CRS_STORAGE = "EPSG:4326"

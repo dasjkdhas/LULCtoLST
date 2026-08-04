@@ -186,7 +186,9 @@ visibility makes the case substantively novel.
 
 LUTHEA is a five-layer pipeline (Fig. 2). Let
 - $p$ index 30 m grid cells inside the AOI $\Omega$;
-- $t_0 = 2016$, $t_1 = 2025$;
+- $t_0$ = the **2016–2018 epoch**, $t_1$ = the **2023–2025 epoch**
+  (see § 6.2.1 for why the contrast is defined between three-year epochs
+  rather than single years);
 - $k, j$ index Dynamic World class labels with $k = j$ denoting "stable".
 
 **Layer 1 — Trajectory identification.** Each $p$ is assigned a transition
@@ -226,6 +228,33 @@ $$
 This dominant-share threshold (≈ 0.44) suppresses mixed pixels whose
 dominant label is statistically fragile. The transition code of $p$ is the
 ordered pair $(\kappa_p^{t_0}, \kappa_p^{t_1})$.
+
+### 6.2.1 Epoch definition and observational constraint
+
+Cloud screening leaves **18 usable Landsat 8/9 summer scenes** over the
+Yamaguchi AOI for 2016–2025, distributed unevenly across years (1, 2, 3,
+1, 1, 1, 1, 2, 2, 4 for 2016 … 2025 respectively). Five individual years
+contribute a single scene, which is below the two-observation floor
+required for a stable pixel-wise median — and the constraint tightens
+further once scenes are stratified into typical and extreme days.
+
+We therefore define the decadal contrast between **three-year epochs**:
+
+$$
+t_0 = \{2016, 2017, 2018\} \;(n = 6), \qquad
+t_1 = \{2023, 2024, 2025\} \;(n = 8), \tag{2'}
+$$
+
+with the intervening years $\{2019, \dots, 2022\}$ ($n = 4$) reserved for
+the per-year trend figure and robustness checks rather than entering the
+contrast. Epoch pooling both restores the per-pixel observation count and
+aligns the estimand with the manuscript's decadal framing: LUTHI measures
+the change between two multi-year climatological states, not between two
+arbitrary satellite overpasses. The scene inventory underlying this
+choice is reported in Table 2 and reproduced by
+`scripts/scene_inventory.py`, which re-derives the counts directly from
+the Earth Engine filter so the reported design cannot drift from the
+ingested data.
 
 ### 6.3 Weather-normalised LST
 
@@ -590,6 +619,18 @@ under (i)–(iii).
 5. ECOSTRESS is used only as an auxiliary diurnal cross-check, not in
    the LUTHI computation, due to irregular revisits and coarser
    ground sampling.
+6. **Thin observational record.** Only 18 cloud-free summer Landsat
+   scenes are available over the Yamaguchi AOI across the decade, which
+   forces the three-year epoch pooling of Eq. 2′ and precludes a
+   year-by-year LUTHI series. The epoch composites are correspondingly
+   sensitive to which individual dates survive cloud screening; we
+   report the full scene inventory (Table 2) so this is auditable, and
+   the β̂ sensitivity analysis (§ 7.4) doubles as a check that the
+   ranking is not driven by any single date.
+7. **Policy overlay unavailable for Yonago.** Tottori prefecture
+   (code 31) is not published in the MLIT A50-20 立地適正化計画 release,
+   so the H8 policy-misalignment analysis is reported for Yamaguchi
+   only. No substitute boundary was constructed.
 
 ---
 
@@ -650,7 +691,7 @@ under (i)–(iii).
 | Table | Content |
 |---|---|
 | 1 | Data sources: product, native resolution, temporal coverage, role. **Extended to include** e-Stat 250 m mesh census, FDMA weekly heatstroke transports, and MLIT A50 立地適正化計画 boundaries. |
-| 2 | Day-selection thresholds and final dates (typical + extreme) — Yamaguchi + Yonago |
+| 2 | **Scene inventory and day selection.** Every retained Landsat scene with its date, sensor, epoch assignment, JMA T_max / sunshine / precipitation / overpass wind, and its typical/extreme label; plus the per-(epoch × scenario) counts that justify Eq. 2′ — Yamaguchi + Yonago |
 | 3 | Transition paths: area, pixel count, validity rate — Yamaguchi + Yonago |
 | 4 | *Central table.* Path LUTHI (typ / ext / HSI) with bootstrap CI and placebo *p* — Yamaguchi + Yonago side by side |
 | **5** | *Urban Climate hook.* HIPI quartile × resident population count × elderly share × prefecture heatstroke correlation strength × IoU with 都市機能誘導区域 |
