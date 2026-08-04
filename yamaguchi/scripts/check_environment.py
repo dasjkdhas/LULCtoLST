@@ -343,19 +343,42 @@ def _try_load_a50(base, code: str, label: str, required: bool) -> None:
 
 
 def check_fdma() -> None:
-    section("FDMA heatstroke transports (correlation-only)")
+    """FDMA feeds only the correlation-only sub-analysis (§ 4.7), which is
+    auxiliary. Accept any mix of XLSX / CSV / PDF so that PDF-only release
+    years never block the main pipeline; report which years will need
+    manual transcription."""
+    section("FDMA heatstroke transports (correlation-only, auxiliary)")
     d = PROJECT_ROOT / "outputs" / "raw" / "fdma"
-    xlsxs = sorted(d.glob("heatstroke_*.xlsx")) if d.exists() else []
-    if len(xlsxs) >= 8:
-        years = sorted({int("".join(c for c in x.stem if c.isdigit())[:4])
-                        for x in xlsxs})
-        ok(f"FDMA workbooks: {len(xlsxs)} files, years {years[0]}–{years[-1]}")
-    elif xlsxs:
-        fail(f"FDMA workbooks (found {len(xlsxs)}, need ≥ 8)",
-             f"See {DOCS_REF} Step 8; download 2016–2025 (Reiwa/Heisei to Gregorian rename)")
+    if not d.exists():
+        fail("FDMA directory present", f"See {DOCS_REF} Step 8")
+        return
+
+    files = sorted(p for p in d.glob("heatstroke_*.*")
+                   if p.suffix.lower() in {".xlsx", ".xls", ".csv", ".pdf"})
+    if not files:
+        fail("FDMA files present", f"See {DOCS_REF} Step 8")
+        return
+
+    def _year(p) -> int | None:
+        digits = "".join(c for c in p.stem if c.isdigit())[:4]
+        return int(digits) if len(digits) == 4 else None
+
+    years = sorted({y for y in (_year(p) for p in files) if y})
+    parsable = [p for p in files if p.suffix.lower() != ".pdf"]
+    pdf_only_years = sorted({_year(p) for p in files
+                             if p.suffix.lower() == ".pdf"}
+                            - {_year(p) for p in parsable})
+
+    if len(years) >= 8:
+        ok(f"FDMA files: {len(files)} covering years {years[0]}–{years[-1]}")
+        if pdf_only_years:
+            ok(f"  note: {pdf_only_years} are PDF-only — those years need "
+               "manual transcription before § 4.7; the main pipeline is "
+               "unaffected")
     else:
-        fail("FDMA workbooks present",
-             f"See {DOCS_REF} Step 8")
+        fail(f"FDMA year coverage (found {len(years)} of 10 years)",
+             f"See {DOCS_REF} Step 8; need at least 8 of 2016–2025 "
+             "(PDF counts toward coverage)")
 
 
 # ── helpers ─────────────────────────────────────────────────────────────

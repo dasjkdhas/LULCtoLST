@@ -71,11 +71,17 @@ def _current_paths(base: Path, prefecture_code: str) -> list[Path]:
 
 
 def _municipality_code(path: Path) -> str:
-    stem = path.stem                      # e.g. "A50-20_35201"
-    if "_" not in stem:
-        return ""
-    tail = stem.split("_")[-1]
-    return tail if tail.isdigit() else ""
+    """Extract the 5-digit municipality code from an A50 filename.
+
+    Tolerant of the suffix variations seen across releases::
+
+        A50-20_35201.shp            -> 35201
+        A50-20_35201_UDA.shp        -> 35201
+        A50-20_35201-jgd2011.shp    -> 35201
+    """
+    import re
+    matches = re.findall(r"(?<!\d)(\d{5})(?!\d)", path.stem)
+    return matches[0] if matches else ""
 
 
 def _zone_column(gdf) -> str | None:
