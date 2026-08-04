@@ -26,12 +26,19 @@ import pandas as pd
 
 
 ESTAT_COLUMN_MAP = {
-    # By column code (schema T001142, 人口及び世帯)
+    # By column code (schema T001142, 人口及び世帯, 2020 census).
+    # Verified against the official 250 m mesh tables tblT001142Q35.txt /
+    # tblT001142Q31.txt: households is **T001142034**, not T001142004
+    # (T001142004 is an age-bracket population field, not a household
+    # count). Do not re-add a T001142004 → households mapping.
     "T001142001": "total_pop",
     "T001142002": "male_pop",
     "T001142003": "female_pop",
-    "T001142004": "households",
-    # By Japanese label — matched against the second header row.
+    "T001142034": "households",
+    # By Japanese label — matched against the second header row. These
+    # take effect when the release ships a label row, and are the
+    # primary route for elderly_pop, whose column code varies by
+    # release.
     "人口（総数）": "total_pop",
     "人口(総数)": "total_pop",
     "総人口": "total_pop",

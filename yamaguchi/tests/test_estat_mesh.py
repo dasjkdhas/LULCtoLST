@@ -65,6 +65,15 @@ def test_invalid_codes_raise():
         mesh_code_to_bbox("5232359905")     # quadrant digit 0 is invalid
 
 
+def test_households_maps_from_T001142034_not_004():
+    """Regression: in the official 2020 250 m mesh tables, 世帯総数 is
+    column T001142034. T001142004 is an age-bracket population field and
+    must NOT be mapped to households."""
+    from luthea.data_ingest.estat import ESTAT_COLUMN_MAP
+    assert ESTAT_COLUMN_MAP["T001142034"] == "households"
+    assert "T001142004" not in ESTAT_COLUMN_MAP
+
+
 def test_stat_table_parsing_with_two_header_rows(tmp_path: Path):
     """e-Stat tables carry a code row and a Japanese label row; the
     loader must resolve population columns from either."""

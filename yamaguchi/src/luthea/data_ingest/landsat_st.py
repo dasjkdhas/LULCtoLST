@@ -29,17 +29,23 @@ SCENE_CLOUD_COVER_MAX = 50.0  # property-level pre-filter; per-pixel mask still 
 
 
 def scale_st_celsius(image):
-    """ST_B10 (digital-number) → LST in °C (manuscript Eq. 3)."""
+    """ST_B10 (digital-number) → LST in °C (manuscript Eq. 3).
+
+    Note: ``copyProperties`` returns an ``ee.Element``, not an
+    ``ee.Image``, so the result must be re-cast before any image method
+    (``.clip``, ``.select``, …) is called downstream. Omitting the cast
+    raises "Element.clip is not a function" at collection-map time.
+    """
     import ee
     lst = (image.select("ST_B10")
            .multiply(LANDSAT_ST_SCALE)
            .add(LANDSAT_ST_OFFSET)
            .subtract(273.15)
            .rename("LST_C"))
-    return lst.copyProperties(image, [
+    return ee.Image(lst.copyProperties(image, [
         "system:time_start", "CLOUD_COVER",
         "WRS_PATH", "WRS_ROW", "LANDSAT_SCENE_ID", "SPACECRAFT_ID",
-    ])
+    ]))
 
 
 def mask_qa(image, bits: tuple[int, ...] = QA_BITS_CLOUD_FAMILY):
