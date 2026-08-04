@@ -1,8 +1,9 @@
 """Tests for typical/extreme day selection."""
 
 import pandas as pd
+import pytest
 
-from luthea.lst.selection import label_days
+from luthea.lst.selection import label_days, retrieval_valid
 
 
 def _row(t_max, sunshine_h=10.0, wind=1.0, precip=0.0, cumrain=0.0, cloud=0.0):
@@ -12,12 +13,12 @@ def _row(t_max, sunshine_h=10.0, wind=1.0, precip=0.0, cumrain=0.0, cloud=0.0):
 
 def test_label_days_distinguishes_typical_and_extreme():
     df = pd.DataFrame([
-        _row(31.5),                # typical
-        _row(36.0),                # extreme
-        _row(28.0),                # neither (too cool)
-        _row(31.0, sunshine_h=5),  # typical fails sunshine
-        _row(31.0, precip=2.0),    # rain disqualifies
-        _row(36.0, wind=5.0),      # windy disqualifies extreme
+        _row(31.5),                # typical (真夏日)
+        _row(36.0),                # extreme (猛暑日)
+        _row(28.0),                # neither — below 真夏日
+        _row(31.0, precip=2.0),    # wet surface disqualifies
+        _row(31.0, cloud=40.0),    # AOI clouded out
+        _row(31.0, cumrain=20.0),  # surface still wet from 48 h rain
     ])
     out = label_days(df)
     assert out["is_typical"].tolist() == [True, False, False, False, False, False]
@@ -38,11 +39,50 @@ def test_jma_official_bands_are_contiguous_and_exclusive():
     out = label_days(df)
     assert out["is_typical"].tolist() == [True, True, True, False, False]
     assert out["is_extreme"].tolist() == [False, False, False, True, False]
-    # No scene may ever occupy both strata.
     assert not (out["is_typical"] & out["is_extreme"]).any()
 
 
+def test_sunshine_and_wind_do_not_screen_by_default():
+    """Sunshine and wind are regressed out during weather normalisation,
+    so screening on them as well would double-count. A low-sunshine,
+    breezy but cloud-free and dry scene must still be usable."""
+    df = pd.DataFrame([_row(32.0, sunshine_h=2.0, wind=9.0)])
+    out = label_days(df)
+    assert bool(out["is_typical"].iloc[0])
+
+
+def test_strict_mode_reinstates_the_original_conjunction():
+    """The supplement reports sensitivity to the stricter screen."""
+    df = pd.DataFrame([
+        _row(32.0, sunshine_h=2.0, wind=1.0),   # fails sunshine
+        _row(32.0, sunshine_h=10.0, wind=9.0),  # fails wind
+        _row(32.0, sunshine_h=10.0, wind=1.0),  # passes both
+    ])
+    out = label_days(df, strict=True)
+    assert out["is_typical"].tolist() == [False, False, True]
+
+
+def test_retrieval_valid_isolates_the_unfixable_conditions():
+    df = pd.DataFrame([
+        _row(32.0),                       # clean
+        _row(32.0, precip=1.0),           # wet
+        _row(32.0, cloud=99.0),           # clouded
+        _row(32.0, cumrain=50.0),         # antecedent rain
+        _row(32.0, sunshine_h=0.0, wind=20.0),  # normalisable, so still valid
+    ])
+    assert retrieval_valid(df).tolist() == [True, False, False, False, True]
+
+
 def test_label_days_missing_column_raises():
-    import pytest
     with pytest.raises(ValueError):
         label_days(pd.DataFrame({"t_max": [30.0]}))
+
+
+def test_strict_mode_requires_the_extra_columns():
+    df = pd.DataFrame([{
+        "t_max": 32.0, "precip_mm": 0.0,
+        "cumrain_48h": 0.0, "scene_cloud_pct": 0.0,
+    }])
+    label_days(df)                       # fine in default mode
+    with pytest.raises(ValueError):
+        label_days(df, strict=True)      # needs sunshine_h / overpass_wind

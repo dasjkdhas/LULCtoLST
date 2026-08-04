@@ -28,9 +28,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from luthea.config import (EPOCH_EARLY, EPOCH_LATE, EPOCH_MID,          # noqa: E402
-                           MIN_SCENES_PER_EPOCH_SCENARIO, YEAR_END,
-                           YEAR_START)
+from luthea.config import (CLOUD_AOI_MAX_PCT, EPOCH_EARLY,              # noqa: E402
+                           EPOCH_LATE, EPOCH_MID,
+                           MIN_SCENES_PER_EPOCH_SCENARIO, TYP_TMAX_MIN,
+                           YEAR_END, YEAR_START)
 
 CITIES = {
     "yamaguchi": {
@@ -137,6 +138,11 @@ def classify(scenes: list[dict], daily_csv: Path, amedas_csv: Path) -> "pd.DataF
                 "cumrain_48h", "scene_cloud_pct")
     if all(c in df.columns for c in required):
         df = label_days(df)
+        # Also evaluate the stricter screen so the cost of dropping the
+        # sunshine / wind conditions is visible in one run.
+        strict = label_days(df, strict=True)
+        df["is_typical_strict"] = strict["is_typical"]
+        df["is_extreme_strict"] = strict["is_extreme"]
     return df
 
 
@@ -195,8 +201,12 @@ def report(df, city: str) -> dict:
         print("\n[!] Day labels unavailable — check the JMA columns.")
         return summary
 
-    print(f"\n{'epoch':<10} {'typical':>8} {'extreme':>8}   verdict")
-    print("-" * 46)
+    has_strict = "is_typical_strict" in df.columns
+    hdr = (f"\n{'epoch':<10} {'typical':>8} {'extreme':>8}"
+           + (f" {'typ(str)':>9} {'ext(str)':>9}" if has_strict else "")
+           + "   verdict")
+    print(hdr)
+    print("-" * (len(hdr) + 4))
     blocking = []
     for ep in ("t0_early", "t1_late"):
         sub = df[df["epoch"] == ep]
@@ -207,8 +217,16 @@ def report(df, city: str) -> dict:
         verdict = "OK" if okay else "INSUFFICIENT"
         if not okay:
             blocking.append((ep, n_typ, n_ext))
-        print(f"{ep:<10} {n_typ:>8} {n_ext:>8}   {verdict}")
-        summary["cells"][ep] = {"typical": n_typ, "extreme": n_ext, "ok": okay}
+        line = f"{ep:<10} {n_typ:>8} {n_ext:>8}"
+        cell = {"typical": n_typ, "extreme": n_ext, "ok": okay}
+        if has_strict:
+            n_typ_s = int(sub["is_typical_strict"].sum())
+            n_ext_s = int(sub["is_extreme_strict"].sum())
+            line += f" {n_typ_s:>9} {n_ext_s:>9}"
+            cell["typical_strict"] = n_typ_s
+            cell["extreme_strict"] = n_ext_s
+        print(f"{line}   {verdict}")
+        summary["cells"][ep] = cell
 
     mid = df[df["epoch"] == "mid"]
     print(f"{'mid':<10} {int(mid.get('is_typical', pd.Series(dtype=bool)).sum()):>8} "
@@ -217,14 +235,19 @@ def report(df, city: str) -> dict:
 
     print()
     if blocking:
-        print("VERDICT: the α/β contrast is NOT yet supported. Options, in "
-              "order of preference:")
-        print("  1. widen SUMMER_MONTHS to (6, 7, 8, 9) in config.py and re-run "
-              "ingest-lst --dry-run;")
-        print("  2. relax CLOUD_AOI_MAX_PCT from 5 to 10;")
-        print("  3. relax the typical-day T_max band (currently 30–33 °C);")
-        print("  4. redefine the epochs to 4 years each (2016–2019 vs 2022–2025).")
-        print("  Report the numbers above before changing any threshold.")
+        print("VERDICT: the α/β contrast is NOT yet supported.")
+        print("  First read the attrition table above: if any criterion shows "
+              "nan > 0, fix that data join before touching a threshold.")
+        print("  Otherwise, remediation options in order of preference:")
+        print(f"  1. widen SUMMER_MONTHS to (6, 7, 8, 9) in config.py, then "
+              "re-run ingest-lst --dry-run and this audit;")
+        print(f"  2. relax CLOUD_AOI_MAX_PCT (currently {CLOUD_AOI_MAX_PCT} %) "
+              "to 10 — LST retrieval degrades gracefully with partial cover;")
+        print("  3. widen the epochs to four years each "
+              "(2016–2019 vs 2022–2025), spending the mid-period scenes;")
+        print(f"  4. last resort — lower TYP_TMAX_MIN below "
+              f"{TYP_TMAX_MIN} °C, which abandons the 真夏日 definition and "
+              "weakens the climatological justification of the strata.")
         summary["verdict"] = "insufficient"
     else:
         print("VERDICT: every (epoch × scenario) cell meets the minimum. "

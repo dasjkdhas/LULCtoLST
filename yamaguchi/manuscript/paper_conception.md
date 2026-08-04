@@ -294,6 +294,28 @@ $$
 Cells with fewer than two valid scenes in a (year, scenario) pair are set
 to NaN.
 
+**Separation of screening and normalisation.** Scene screening and
+weather normalisation are deliberately assigned disjoint duties, because
+applying both to the same variable removes the same signal twice and
+decimates an already thin Landsat record for no inferential gain. We
+screen only on conditions that Eq. 5 cannot repair: the AOI cloud
+fraction, since a masked pixel has no retrieval to correct, and same-day
+plus 48 h antecedent precipitation, since a wet surface occupies a
+different evaporative regime rather than carrying a linear
+meteorological offset. Air temperature at overpass, relative humidity,
+wind speed and antecedent sunshine are *not* screened; they enter
+$\mathbf{X}_d$ and are projected out by $\hat{\boldsymbol\beta}$. A
+supplementary sensitivity analysis reports every headline estimate under
+a stricter screen that additionally requires $\ge 8$ h of sunshine and
+overpass wind $\le 3$ m s$^{-1}$ (SI Table S7).
+
+**Scenario strata.** Typical and extreme days follow the Japan
+Meteorological Agency's official climatological categories rather than
+tuned cut-points: 真夏日 ($30 \le T_{max} < 35$ °C) defines the typical
+stratum and 猛暑日 ($T_{max} \ge 35$ °C) the extreme stratum. The bands
+are contiguous and mutually exclusive, so no qualifying acquisition is
+silently discarded between them.
+
 **Assumption B (defence against review-objection b).** Eq. 4 enforces a
 single global $\boldsymbol\beta$ across the AOI; this trades local
 fidelity for sample size. We test sensitivity to this choice in § 7.x
@@ -749,6 +771,7 @@ Scopus, ranked by priority. The first search per theme should yield
 - **SI Table S4** — LUTHI vs three baseline estimators (naïve state contrast, standard DiD, matching-only) on identical pixels.
 - **SI Table S5** — LUTHI rankings across the four β̂ specifications (H5 support).
 - **SI Table S6** — Heatstroke correlation robustness (per-year Spearman ρ; lag ±1 week; alternate definitions of "extreme day").
+- **SI Table S7** — Screening sensitivity: every headline estimate recomputed under the stricter scene screen (sunshine ≥ 8 h and overpass wind ≤ 3 m s⁻¹ additionally required), with the resulting scene counts per epoch × scenario cell.
 
 Recommended anchor count: 60–80 references in the final manuscript;
 20 of these should be in the last three years to demonstrate currency.
