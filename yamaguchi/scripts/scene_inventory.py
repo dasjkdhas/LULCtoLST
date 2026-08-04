@@ -57,10 +57,17 @@ def epoch_of(year: int) -> str:
 
 
 def landsat_dates(aoi_path: Path, project: str | None) -> list[dict]:
-    """Return [{date, scene_id, cloud_cover}] using the pipeline's own filter."""
+    """Return one record per scene using the pipeline's own filter.
+
+    Reports **both** cloud statistics so the two are never confused:
+      * ``scene_cloud_cover`` — the whole-footprint CLOUD_COVER property;
+      * ``aoi_cloud_pct``     — the share of the AOI actually lost to the
+        QA mask, which is what ``CLOUD_AOI_MAX_PCT`` is defined against.
+    """
     from luthea.data_ingest._gee import (init_ee, load_aoi_geojson,
                                          to_ee_geometry, utc_date_string)
-    from luthea.data_ingest.landsat_st import collection_for_aoi
+    from luthea.data_ingest.landsat_st import (aoi_cloud_percent,
+                                               collection_for_aoi)
     init_ee(project)
     import ee
 
@@ -76,11 +83,16 @@ def landsat_dates(aoi_path: Path, project: str | None) -> list[dict]:
         props = img.toDictionary(
             ["system:time_start", "CLOUD_COVER", "LANDSAT_SCENE_ID",
              "SPACECRAFT_ID"]).getInfo()
+        try:
+            aoi_pct = aoi_cloud_percent(img, geom)
+        except Exception:
+            aoi_pct = float("nan")
         out.append({
             "date": utc_date_string(int(props["system:time_start"])),
             "scene_id": props.get("LANDSAT_SCENE_ID"),
             "spacecraft": props.get("SPACECRAFT_ID"),
-            "cloud_cover": props.get("CLOUD_COVER"),
+            "scene_cloud_cover": props.get("CLOUD_COVER"),
+            "aoi_cloud_pct": aoi_pct,
         })
     return sorted(out, key=lambda r: r["date"])
 
@@ -114,7 +126,10 @@ def classify(scenes: list[dict], daily_csv: Path, amedas_csv: Path) -> "pd.DataF
             "sunshine_h": float(rec.get("sunshine_h", float("nan"))),
             "cumrain_48h": float(rec.get("cumrain_48h", float("nan"))),
             "overpass_wind": wind,
-            "scene_cloud_pct": float(s.get("cloud_cover") or 0.0),
+            # AOI-level cloud loss, NOT the scene-wide CLOUD_COVER property.
+            "scene_cloud_pct": float(s.get("aoi_cloud_pct")
+                                     if s.get("aoi_cloud_pct") is not None
+                                     else float("nan")),
         })
 
     df = pd.DataFrame(rows)
@@ -125,13 +140,55 @@ def classify(scenes: list[dict], daily_csv: Path, amedas_csv: Path) -> "pd.DataF
     return df
 
 
+def attrition(df) -> "pd.DataFrame":
+    """Per-criterion pass counts — localises which filter is doing the
+    killing when a scenario cell comes back empty."""
+    import pandas as pd
+    from luthea.config import (CLOUD_AOI_MAX_PCT, CUMRAIN_48H_MAX_MM,
+                               EXT_TMAX_MIN, NO_RAIN_MM,
+                               SUNSHINE_HOURS_MIN_EXT, SUNSHINE_HOURS_MIN_TYP,
+                               TYP_TMAX_MAX, TYP_TMAX_MIN, WIND_MAX_MS)
+
+    n = len(df)
+    checks = {
+        f"precip == {NO_RAIN_MM}": df["precip_mm"] == NO_RAIN_MM,
+        f"overpass_wind <= {WIND_MAX_MS}": df["overpass_wind"] <= WIND_MAX_MS,
+        f"cumrain_48h < {CUMRAIN_48H_MAX_MM}": df["cumrain_48h"] < CUMRAIN_48H_MAX_MM,
+        f"aoi_cloud < {CLOUD_AOI_MAX_PCT}%": df["scene_cloud_pct"] < CLOUD_AOI_MAX_PCT,
+        f"sunshine >= {SUNSHINE_HOURS_MIN_TYP}h (typ)": df["sunshine_h"] >= SUNSHINE_HOURS_MIN_TYP,
+        f"sunshine >= {SUNSHINE_HOURS_MIN_EXT}h (ext)": df["sunshine_h"] >= SUNSHINE_HOURS_MIN_EXT,
+        f"{TYP_TMAX_MIN} <= t_max < {TYP_TMAX_MAX} (typ)":
+            (df["t_max"] >= TYP_TMAX_MIN) & (df["t_max"] < TYP_TMAX_MAX),
+        f"t_max >= {EXT_TMAX_MIN} (ext)": df["t_max"] >= EXT_TMAX_MIN,
+    }
+    rows = []
+    for label, mask in checks.items():
+        passed = int(mask.fillna(False).sum())
+        rows.append({
+            "criterion": label,
+            "pass": passed,
+            "fail": n - passed,
+            "nan": int(mask.isna().sum()) if hasattr(mask, "isna") else 0,
+        })
+    return pd.DataFrame(rows)
+
+
 def report(df, city: str) -> dict:
     import pandas as pd
-    print(f"\n{'=' * 72}\n  Scene inventory — {city}\n{'=' * 72}")
+    print(f"\n{'=' * 78}\n  Scene inventory — {city}\n{'=' * 78}")
     cols = [c for c in ("date", "spacecraft", "epoch", "t_max", "sunshine_h",
-                        "precip_mm", "overpass_wind", "scene_cloud_pct",
+                        "precip_mm", "cumrain_48h", "overpass_wind",
+                        "scene_cloud_pct", "scene_cloud_cover",
                         "is_typical", "is_extreme") if c in df.columns]
     print(df[cols].to_string(index=False))
+
+    required = ("t_max", "precip_mm", "sunshine_h", "overpass_wind",
+                "cumrain_48h", "scene_cloud_pct")
+    if all(c in df.columns for c in required):
+        print("\n--- filter attrition (independent, not cumulative) ---")
+        print(attrition(df).to_string(index=False))
+        print("  'nan' > 0 means the underlying value never arrived — that is "
+              "a data-join defect, not a climatological result.")
 
     summary: dict = {"city": city, "n_scenes": int(len(df)), "cells": {}}
     if "is_typical" not in df.columns:

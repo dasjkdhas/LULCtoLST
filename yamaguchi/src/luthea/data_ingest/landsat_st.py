@@ -75,6 +75,31 @@ def qa_mask_numpy(qa_array: np.ndarray,
     return keep
 
 
+def aoi_cloud_percent(image, aoi_geometry, scale: float = LST_RES_M) -> float:
+    """Percentage of the **AOI** that is lost to the QA cloud mask.
+
+    This is the quantity ``CLOUD_AOI_MAX_PCT`` is defined against. It is
+    emphatically *not* the scene-level ``CLOUD_COVER`` property, which
+    describes the whole 185 x 180 km Landsat footprint: a scene can be
+    40 % cloudy overall while the 11 km² central district underneath is
+    perfectly clear. Screening an AOI with a scene-level statistic
+    discards most usable acquisitions.
+
+    Returns a float in [0, 100]; 0 means the AOI is fully retained.
+    """
+    import ee
+    valid = mask_qa(image).select("ST_B10").mask().rename("valid")
+    frac = valid.reduceRegion(
+        reducer=ee.Reducer.mean(),
+        geometry=aoi_geometry,
+        scale=scale,
+        maxPixels=int(1e9),
+        bestEffort=True,
+    ).get("valid")
+    frac_val = ee.Algorithms.If(ee.Algorithms.IsEqual(frac, None), 0, frac)
+    return float((1.0 - ee.Number(frac_val).getInfo()) * 100.0)
+
+
 def collection_for_aoi(year_start: int, year_end: int, aoi_geometry,
                        months: tuple[int, ...] = SUMMER_MONTHS):
     """Return a merged LC08 + LC09 collection of LST scenes (°C) clipped

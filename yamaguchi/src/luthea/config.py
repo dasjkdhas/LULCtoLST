@@ -61,8 +61,17 @@ LANDSAT_ST_SCALE = 0.00341802
 LANDSAT_ST_OFFSET = 149.0     # Kelvin; subtract 273.15 for Celsius
 
 # ── Filtering thresholds (Step 4) ────────────────────────────────────────
-TYP_TMAX_MIN, TYP_TMAX_MAX = 30.0, 33.0
-EXT_TMAX_MIN = 35.0
+# Scenario bands follow the Japan Meteorological Agency's official
+# climatological categories, which makes them defensible without
+# arbitrary tuning and leaves no dead zone between the two strata:
+#
+#   真夏日  (mid-summer day) : T_max >= 30 °C   -> "typical"  (below 35)
+#   猛暑日  (extremely hot day): T_max >= 35 °C -> "extreme"
+#
+# The earlier 30–33 °C typical band left days at 33–35 °C belonging to
+# neither stratum, silently discarding scarce scenes.
+TYP_TMAX_MIN, TYP_TMAX_MAX = 30.0, 35.0   # [30, 35) — 真夏日 but not 猛暑日
+EXT_TMAX_MIN = 35.0                        # 猛暑日
 NO_RAIN_MM = 0.0
 SUNSHINE_HOURS_MIN_TYP = 8.0
 SUNSHINE_HOURS_MIN_EXT = 9.0

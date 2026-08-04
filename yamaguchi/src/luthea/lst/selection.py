@@ -32,10 +32,12 @@ def label_days(daily: pd.DataFrame) -> pd.DataFrame:
     )
 
     out = daily.copy()
+    # Half-open band [TYP_TMAX_MIN, TYP_TMAX_MAX) so that a day at exactly
+    # 35.0 °C is 猛暑日 (extreme) only, never both strata at once.
     out["is_typical"] = (
         base
         & (daily["t_max"] >= TYP_TMAX_MIN)
-        & (daily["t_max"] <= TYP_TMAX_MAX)
+        & (daily["t_max"] < TYP_TMAX_MAX)
         & (daily["sunshine_h"] >= SUNSHINE_HOURS_MIN_TYP)
     )
     out["is_extreme"] = (
