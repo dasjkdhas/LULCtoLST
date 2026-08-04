@@ -367,6 +367,7 @@ If the count is **> 100**, your AOI is too big — see Step 2 pitfall.
 ## Step 7 — Live ingestion
 
 ```bash
+luthea ingest-dw --dry-run              # per-year source-image counts, no tasks
 luthea ingest-dw                        # 10 Drive tasks for 2016-2025 LULC
 luthea ingest-lst                       # 30-60 Drive tasks for Landsat LST
 ```

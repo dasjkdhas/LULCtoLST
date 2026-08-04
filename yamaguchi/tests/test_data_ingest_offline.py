@@ -120,3 +120,16 @@ def test_cli_ingest_dw_help_lists_required_options():
     assert "--aoi" in res.stdout
     assert "--year-start" in res.stdout
     assert "--folder" in res.stdout
+
+
+@pytest.mark.parametrize("subcommand", ["ingest-dw", "ingest-lst"])
+def test_every_ingest_subcommand_supports_dry_run(subcommand):
+    """Regression: `ingest-dw` shipped without --dry-run, so the only way
+    to inspect it was to submit real Drive tasks. Every ingest subcommand
+    that can spend quota must offer a no-op inspection mode."""
+    import subprocess
+    import sys
+    res = subprocess.run([sys.executable, "-m", "luthea.cli", subcommand, "--help"],
+                         capture_output=True, text=True)
+    assert res.returncode == 0
+    assert "--dry-run" in res.stdout, f"{subcommand} is missing --dry-run"

@@ -350,6 +350,7 @@ Only after Step 9 exits 0, proceed to:
 
 ```bash
 luthea ingest-lst --dry-run                      # sanity-check Landsat scene count
+luthea ingest-dw --dry-run                       # per-year source-image counts, no tasks
 luthea ingest-dw                                 # submit 10 Drive tasks (Dynamic World)
 luthea ingest-lst                                # submit 30-60 Drive tasks (Landsat ST)
 ```

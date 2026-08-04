@@ -30,15 +30,22 @@ def _default_aoi() -> Path:
 def _cmd_ingest_dw(args: argparse.Namespace) -> int:
     from .data_ingest.dynamic_world import export_all
     years = range(args.year_start, args.year_end + 1)
-    print(f"[ingest-dw] AOI={args.aoi} years={list(years)} folder={args.folder}")
-    task_ids = export_all(
+    print(f"[ingest-dw] AOI={args.aoi} years={list(years)} folder={args.folder} "
+          f"dry_run={args.dry_run}")
+    records = export_all(
         aoi_geojson_path=args.aoi,
         years=years,
         drive_folder=args.folder,
         project=args.project,
+        dry_run=args.dry_run,
     )
-    for y, tid in zip(years, task_ids):
-        print(f"  {y}: task {tid}")
+    print(f"  {len(records)} year(s) "
+          f"{'listed' if args.dry_run else 'submitted'}")
+    print(json.dumps(records, indent=2))
+    empty = [r["year"] for r in records if r["n_source_images"] == 0]
+    if empty:
+        print(f"  WARNING: no Dynamic World source images for years {empty} — "
+              "check the AOI location and the summer month window.")
     return 0
 
 
@@ -103,6 +110,9 @@ def main(argv: list[str] | None = None) -> int:
     sp.add_argument("--folder", default="luthea_dw")
     sp.add_argument("--project", default=None,
                     help="GEE project id (overrides EE_PROJECT env var)")
+    sp.add_argument("--dry-run", action="store_true",
+                    help="report per-year source-image counts without "
+                         "submitting any Drive export task")
     sp.set_defaults(func=_cmd_ingest_dw)
 
     # ── ingest-lst ───────────────────────────────────────────────────
