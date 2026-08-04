@@ -34,7 +34,11 @@ def test_check_python_lists_core_packages():
 def test_check_luthea_modules_listed():
     res = _run()
     assert "luthea v" in res.stdout
-    assert "16 algorithm modules" in res.stdout
+    # Module count increased from 16 → 20 with the Urban Climate pivot
+    # (added fdma, estat, mlit_a50, exposure). Assert on the pattern
+    # rather than an exact number so future additions don't break.
+    import re
+    assert re.search(r"All \d+ algorithm modules importable", res.stdout)
 
 
 def test_check_outputs_directories_created():

@@ -15,16 +15,18 @@
 
 | Field | Value |
 |---|---|
-| Working title | LUTHEA: A Quasi-Causal Attribution Framework for Land-Use Transition-Driven Urban Heat Change Using Multi-Source Satellite Data |
-| Journal | Remote Sensing (MDPI) |
+| Working title | Asymmetric surface heat impacts of decadal land-use transitions under typical versus extreme summer conditions: A causal attribution for compact Japanese regional cities |
+| **Journal** | **Urban Climate (Elsevier)** *— pivoted from Remote Sensing after 2025-2026 literature scan* |
 | Article type | Research article |
-| Reader profile | Remote-sensing methodologists; urban-climate empiricists; ML + causal-inference cross-over |
-| One-sentence pitch (**Q1**) | "We introduce a method that upgrades LULC-vs-LST analysis from correlation to **quasi-causal attribution**, and validate it on Yamaguchi." |
-| Most-feared rejection (**Q2**) | (a) "LUTHI is dressed-up DiD" + (b) "Spatially-uniform β̂ is biophysically untenable" |
+| Reader profile | Urban-climate empiricists; policy scientists; ML + causal-inference; compact-city planners |
+| One-sentence pitch (**Q1**) | "Under intensifying summer heat, urban greening's cooling potential may collapse exactly when it is most needed — we quantify this state-dependent asymmetry in compact Japanese cities and link it to population exposure and コンパクトシティ policy." |
+| Most-feared rejection (**Q2**) | (a) "LUTHI is dressed-up DiD" + (b) "Spatially-uniform β̂ is biophysically untenable" — plus new (c) "correlation-only heatstroke overlay is thin" |
 | Subtracted module (**Q3**) | Multi-scale SSI dropped; LUTHI computed at single 300 m default radius |
-| Headline finding (**Q4**) | α: HSI(Green→Built-up) ≈ +1.8 °C (≈180 % amplification under extreme heat) + β: HSI(Built-up→Green) ≈ −0.2 °C (cooling potential collapses) — together: *non-symmetric, state-dependent transition heat impact* |
-| Headline number to hit | Both α-prediction CI and β-prediction CI not crossing zero AND placebo p > 0.05 AND visible in Fig. 5 at a glance |
-| Manuscript deadline (self-set) | end of Yamaguchi pipeline + 6 weeks |
+| Headline finding (**Q4**) | α: HSI(Green→Built-up) ≈ +1.8 °C (≈180 % amplification under extreme heat) + β: HSI(Built-up→Green) ≈ −0.2 °C (cooling potential collapses) — with population exposure and 立地適正化計画 misalignment as the policy payload |
+| Second case city | **Yonago (米子)**, Tottori — JMA station 68861 |
+| Anchor competitor to differentiate from | Tokyo TOD 2026 Urban Climate (S2210670726002052) — state-based, no meteo control, no typ/ext, no causal ID |
+| Headline number to hit | Both α-prediction CI and β-prediction CI not crossing zero AND placebo p > 0.05 AND visible in Fig. 5 at a glance AND Yonago replicates (Spearman ρ ≥ 0.6) |
+| Manuscript deadline (self-set) | end of Yamaguchi + Yonago pipeline + 6 weeks |
 
 ---
 
@@ -75,27 +77,27 @@ move ≈ 50 words.
 | 5 | 180 | Why Yamaguchi: basin morphology, decadal but moderate LULC dynamics, JMA 81428 high-quality record, MLIT 立地適正化計画 relevance. | Forward to § 2 + 1 prior Japanese mid-city RS paper. |
 | 6 | 200 | Five-bullet contribution list. | Forward to § 3 + § 4 + SI release. |
 
-### § 2 Study area and data (≈ 750 words)
+### § 2 Study area and data (≈ 800 words)
 
 | Sub | ≈ words | Content |
 |---|---|---|
-| 2.1 Study area | 250 | Coordinates, climate normals (JMA 81428), AOI definition (山口駅 – 中央商店街 – 県庁 – 湯田温泉), basin geometry, OSM basemap. Fig. 1. |
-| 2.2 Satellite data | 250 | Table 1: Dynamic World V1 (10 m, yearly mode), Landsat 8/9 C2 L2 ST (30 m), ECOSTRESS (auxiliary), ESA WorldCover (cross-validation), MODIS (background only). Justify exclusions. |
-| 2.3 Meteorological and ancillary data | 250 | JMA 81428 daily + AMeDAS 10-min schema, GSI DEM 5 m / ALOS AW3D30, OSM roads, GSW water mask, OSM/基盤地図 buildings. |
+| 2.1 Study areas — Yamaguchi + Yonago | 260 | Coordinates and climate normals (JMA 81428 for Yamaguchi, 68861 for Yonago); dual AOI definition (both central districts with their onsen quarters and 中心商店街); basin (Yamaguchi) vs coastal (Yonago) morphology contrast used as robustness dimension. Fig. 1 (two-panel). |
+| 2.2 Satellite data | 220 | Table 1: Dynamic World V1 (10 m), Landsat 8/9 C2 L2 ST (30 m), ECOSTRESS (auxiliary), ESA WorldCover (cross-validation), MODIS (background). |
+| 2.3 Meteorological, socio-economic, and policy data | 320 | JMA daily + AMeDAS 10-min for both stations; GSI DEM 5 m; OSM roads; GSW water. **New for Urban Climate**: e-Stat 250 m mesh 2020 census population + elderly share; FDMA weekly heatstroke ambulance transports for Yamaguchi and Tottori prefectures 2016–2025; MLIT 国土数値情報 A50 立地適正化計画 都市機能誘導区域 boundaries for both cities. |
 
-### § 3 Methods (≈ 3 000 words; updated per Q1+Q2 lock)
+### § 3 Methods (≈ 2 900 words; updated post-Urban-Climate pivot)
 
 | Sub | ≈ words | Anchor equations | Figure / SI |
 |---|---|---|---|
-| 3.1 Framework overview | 220 | — | Fig. 2 flowchart |
-| 3.2 Trajectory identification | 240 | Eq. 1–2 | Fig. 3 (in § 4.1) |
-| 3.3 Weather-normalised LST + **Assumption B** | 460 | Eq. 3–5′ | SI Fig. S1 β̂ (forward ref to § 4.4) |
-| 3.4 Stable Reference Set + matching | 380 | Eq. 6–7 | SI Fig. S2 love plot |
-| 3.5 LUTHI / HSI + **A1–A4 identification statement** | 620 | Eq. 8–11 | Fig. 5 |
-| 3.6 Path-level SHAP attribution | 260 | spatial 5-fold CV | Fig. 6 |
-| 3.7 Heat Improvement Priority Index (demoted) | 180 | Eq. 12 | Fig. 7 |
-| 3.8 Uncertainty quantification | 350 | Eq. 13–14 | Fig. 5 CI bars + SI Table S2 |
-| 3.9 Baseline-estimator comparisons | 290 | — | SI Table S4 |
+| 3.1 Framework overview | 210 | — | Fig. 2 flowchart |
+| 3.2 Trajectory identification | 220 | Eq. 1–2 | Fig. 3 (in § 4.1) |
+| 3.3 Weather-normalised LST + **Assumption B** | 440 | Eq. 3–5′ | SI Fig. S1 β̂ (forward ref to § 4.4) |
+| 3.4 Stable Reference Set + matching | 360 | Eq. 6–7 | SI Fig. S2 love plot |
+| 3.5 LUTHI / HSI + **A1–A4 identification statement** | 580 | Eq. 8–11 | Fig. 5 |
+| 3.6 Path-level SHAP attribution | 240 | spatial 5-fold CV | Fig. 6 |
+| 3.7 HIPI + **exposure / heatstroke / policy overlay** *(expanded)* | 320 | Eq. 12, Eq. 15a-b | Fig. 7 |
+| 3.8 Uncertainty quantification | 320 | Eq. 13–14 | Fig. 5 CI bars + SI Table S2 |
+| 3.9 Baseline-estimator comparisons | 210 | — | SI Table S4 |
 
 § 3.5 must contain the A1–A4 paragraph (defence against objection a).
 § 3.3 must contain the Assumption B paragraph (defence against
@@ -103,29 +105,30 @@ objection b) with forward reference to § 4.4. Multi-scale LUTHI(r) and
 SSI are mentioned in a single sentence as "deferred to methodological
 supplement" (post-Q3).
 
-### § 4 Results (≈ 1 900 words, 7 subsections — multi-scale dropped, β̂-sensitivity and baseline-comparison added)
+### § 4 Results (≈ 2 000 words, 9 subsections — H6-H8 added)
 
 | Sub | ≈ words | Headline number(s) — pre-registered | Asset |
 |---|---|---|---|
-| 4.1 LULC dynamics 2016 → 2025 | 200 | net Built-up Δ%, Green Δ%, dominant flows | Fig. 3, Table 3 |
-| 4.2 Raw vs weather-normalised LST trend | 220 | raw ΔLST ≈ +1.0 °C, ΔWNSC ≈ +0.4 °C, ratio ≤ 0.6 (H4) | Fig. 4 |
-| 4.3 Path-level LUTHI — *central result (α, β)* | 380 | LUTHI(Green→Built-up): typ +1.0, ext +2.8 °C; HSI +1.8 °C. LUTHI(Built-up→Green): typ −1.2, ext −0.3 °C; \|HSI\| < 0.5 °C | Fig. 5, Table 4 |
-| 4.4 β̂ specification sensitivity (defence b) | 240 | Spearman ρ ≥ 0.85 across 4 β̂ specs (H5) | SI Table S5 |
-| 4.5 Path-stratified SHAP | 240 | top-3 covariates modulating HSI per path | Fig. 6 |
-| 4.6 HIPI top-quartile map (demoted) | 180 | % AOI flagged; pedestrian-axis overlap length | Fig. 7 |
-| 4.7 Second-city transferability (required by Q1) | 240 | Spearman ρ ≥ 0.6 of LUTHI rankings; HSI sign agreement on ≥ 4 of top-5 paths | SI Table S3, SI Fig. S3 |
-| 4.8 Baseline-estimator comparison (defence a) | 200 | Asymmetry of α and β invisible under naïve / DiD / matching-only | SI Table S4 |
+| 4.1 LULC dynamics 2016 → 2025 | 180 | net Built-up Δ%, Green Δ%, dominant flows | Fig. 3, Table 3 |
+| 4.2 Raw vs weather-normalised LST trend | 190 | raw ΔLST ≈ +1.0 °C, ΔWNSC ≈ +0.4 °C, ratio ≤ 0.6 (H4) | Fig. 4 |
+| 4.3 Path-level LUTHI — *central result (α, β)* | 340 | LUTHI(Green→Built-up): typ +1.0, ext +2.8 °C; HSI +1.8 °C. LUTHI(Built-up→Green): typ −1.2, ext −0.3 °C; \|HSI\| < 0.5 °C | Fig. 5, Table 4 |
+| 4.4 β̂ specification sensitivity (defence b) | 200 | Spearman ρ ≥ 0.85 across 4 β̂ specs (H5) | SI Table S5 |
+| 4.5 Path-stratified SHAP | 200 | top-3 covariates modulating HSI per path | Fig. 6 |
+| **4.6 HIPI + population exposure + policy overlay** (**Urban Climate hook**) | 320 | Population exposure share ≥ 0.30 (H7); IoU(Q₄, Z) < 0.6 & missed ≥ 0.25 (H8) | Fig. 7 (three panels), Table 5 |
+| **4.7 Heatstroke correlation (correlation-only)** | 160 | Spearman ρ(HSI\_year, transports\_year) reported with CI; no causal claim | SI Table S6, Fig. 7b |
+| 4.8 Yonago replication (H6) | 240 | Path LUTHI ρ ≥ 0.6; HSI sign agreement on ≥ 4 of top-5 paths | SI Table S3, SI Fig. S3 |
+| 4.9 Baseline-estimator comparison (defence a) | 170 | Asymmetry of α and β invisible under naïve / DiD / matching-only | SI Table S4 |
 
-### § 5 Discussion (≈ 1 500 words, 6 paragraphs)
+### § 5 Discussion (≈ 1 500 words, 6 paragraphs — reordered for Urban Climate)
 
 | ¶ | ≈ words | Argument |
 |---|---|---|
-| 1 | 280 | Quantify the bias of state-based analysis: rerun naïve mean-LST-by-class contrast on the same pixels, report magnitude vs LUTHI. |
-| 2 | 260 | Asymmetry under extreme heat (HSI signs); plausible biophysics (surface moisture, roughness, latent decoupling). |
-| 3 | 220 | Why 300 m is the diagnostic scale; relate to LCZ and boundary-layer blending. |
-| 4 | 260 | Policy implication for コンパクトシティ — preserving green corridors while compacting elsewhere. |
-| 5 | 240 | What generalises (Eq. 1–16, package), what doesn't (Yamaguchi-specific parameters). |
-| 6 | 240 | Open methodological frontier — spatially-varying β, hierarchical Bayesian extension, hourly LST via ECOSTRESS fusion. |
+| 1 | 260 | **Mechanism of α/β asymmetry** — moisture-limited cooling of vegetation under heatwave regimes; latent-heat decoupling; how the DDD identification of HSI (A4) turns this observation into an estimated effect size. |
+| 2 | 220 | **State vs process bias quantification** — recompute naïve mean-LST-by-class on identical pixels; report the systematic under-estimation of extreme-day warming. Compare to Tokyo TOD 2026's state-based finding. |
+| 3 | 260 | **Compact city policy implications** — greening protection must be built into infill under the 立地適正化計画 framework; specific paragraph on how the IoU(Q₄, Z) < 0.6 finding maps to 都市機能誘導区域 revision. |
+| 4 | 260 | **Population exposure and equity** — H7 result reframed as "who bears the α risk"; elderly-share disparity; caveat on health inference limits (correlation-only heatstroke overlay). |
+| 5 | 260 | **Yonago generalisation and heterogeneity** — same α/β signs across basin (Yamaguchi) and coastal (Yonago) morphologies; boundary-layer / coastal-breeze differences discussed. |
+| 6 | 240 | **Open methodological frontier** — spatially-varying β, hierarchical Bayesian extension, hourly LST via ECOSTRESS fusion, extending to health causal chain with municipality-level data if it becomes available. |
 
 ### § 6 Limitations (≈ 400 words, 5 bullets)
 
@@ -171,15 +174,17 @@ reproducibility sentence.
 |---|---|---|
 | **α: Green→Built-up amplifies under extreme heat (HSI > 0)** | Fig. 5 + Table 4 HSI col | not produced |
 | **β: Built-up→Green cooling collapses under extreme heat (\|HSI\| small)** | Fig. 5 + Table 4 HSI col | not produced |
-| State-vs-process bias quantification | SI Table S4 + Discussion ¶ 1 sidebar | not produced |
+| State-vs-process bias quantification | SI Table S4 + Discussion ¶ 2 sidebar | not produced |
 | Triple control removes ≥ 40 % of apparent decadal warming (H4) | Fig. 4 + side metric | not produced |
 | H1 — trajectory > end-state in partial R² | Fig. 6 SHAP + partial-R² table | not produced |
 | H5 — LUTHI rankings stable across β̂ specs (Spearman ρ ≥ 0.85) | SI Table S5 | not produced |
+| **H6 — Yonago replicates (Spearman ρ ≥ 0.6 + sign agreement ≥ 4/5)** | SI Table S3 + SI Fig. S3 | not produced |
+| **H7 — HIPI top-quartile covers ≥ 30 % population + elevated elderly share** | Fig. 7a + Table 5 | not produced |
+| **H8 — IoU(HIPI top-quartile, 都市機能誘導区域) < 0.6 with missed area ≥ 25 %** | Fig. 7c + Table 5 | not produced |
+| Heatstroke correlation (correlation-only context) | Fig. 7b + SI Table S6 | not produced |
 | LUTHI vs baseline estimators differ in detecting α/β asymmetry | SI Table S4 | not produced |
-| Method generalises to second city (Spearman ρ ≥ 0.6) | SI Table S3 + SI Fig. S3 | not produced |
-| Matching balance achieved (|SMD| < 0.1) | SI Fig. S2 love plot | not produced |
+| Matching balance achieved (\|SMD\| < 0.1) | SI Fig. S2 love plot | not produced |
 | Placebo passes for headline paths (p > 0.05) | Table 4 placebo *p* col | not produced |
-| HIPI overlaps pedestrian axis (applied, demoted) | Fig. 7 + AOI walk-line | not produced |
 
 ---
 

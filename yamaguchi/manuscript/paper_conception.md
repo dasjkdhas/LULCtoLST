@@ -1,8 +1,8 @@
-# Paper Conception — LUTHEA / LUTHI, Yamaguchi 2016–2025
+# Paper Conception — LUTHEA / LUTHI, Yamaguchi + Yonago 2016–2025
 
 > Working document for the SCI paper described in
 > `/root/.claude/plans/token-token-quiet-bachman.md`.
-> Target journal: **Remote Sensing** (primary), Urban Climate /
+> **Target journal (v2 lock): Urban Climate (Elsevier)**. Remote Sensing /
 > GIScience & Remote Sensing / Sustainable Cities and Society as fallbacks.
 > Status: pre-data; numbers in *Results* are hypothesised ranges to be
 > filled in after pipeline runs.
@@ -16,54 +16,91 @@
 | **Q1 — Identity** | **Method-first** (Option A). Abstract opens with "We introduce LUTHEA…"; Methods budget 3 000 words; second-city replication is **required**, not optional; HIPI is demoted to applied demo. |
 | **Q2 — Most-feared rejection** | (a) *"LUTHI is dressed-up DiD"* + (b) *"Spatially-uniform β̂ is biophysically untenable"*. Defences pre-positioned: identification statement A1–A4 in § 6.5; Assumption B in § 6.3; baseline-comparison SI table; β̂-sensitivity sub-result § 7.x. |
 | **Q3 — Subtraction** | Cut **multi-scale SSI** (∂LUTHI/∂r). Neighbourhood radii 100/300/500 m **remain** as matching covariates; LUTHI itself is computed at a single default radius (300 m). H4 (300 m as diagnostic scale) is dropped; Fig. 6 and Table 5 are removed; main figures shrink to 7, main tables to 4. |
-| **Q4 — Central claim** | **Asymmetric, state-dependent transition effects.** α: HSI(Green→Built-up) ≈ +1.8 °C (≈180 % amplification under extreme heat). β: HSI(Built-up→Green) ≈ −0.2 °C (cooling potential collapses under extreme heat). Together they form the manuscript's take-home: *the marginal heat impact of land-use transitions is non-symmetric and only visible under typical/extreme stratification, which state-based analyses cannot deliver*. |
+| **Q4 — Central claim** | **Asymmetric, state-dependent transition effects.** α: HSI(Green→Built-up) ≈ +1.8 °C (≈180 % amplification under extreme heat). β: HSI(Built-up→Green) ≈ −0.2 °C (cooling potential collapses under extreme heat). Together they form the manuscript's take-home. |
 
-Word-budget reconciliation: Methods 2 500 → **3 000**; Results 1 800 → **1 900**; total ≈ 8 900.
+## 0.5 Journal pivot to Urban Climate (post-literature-scan lock)
+
+After a 2025-2026 scan of the Urban Climate / Remote Sensing landscape,
+the primary target is **switched from Remote Sensing to Urban Climate**.
+Justification:
+
+1. **Editorial fit**: Urban Climate's 2025-2026 editorial priorities (extreme
+   heat mechanisms, compact city / TOD, ML+SHAP interpretation, policy
+   relevance) intersect our α/β asymmetry claim on every axis. The
+   direct anchor paper — Tokyo TOD 2026 [S2210670726002052] — establishes
+   the venue's appetite for XGBoost-SHAP LST attribution and gives us
+   four differentiation levers (state→process, meteorology control,
+   causal identification, typ/ext stratification).
+2. **Impact factor**: Urban Climate IF ≈ 6.5 vs Remote Sensing IF ≈ 4.5.
+3. **Policy leverage**: adding population exposure, heatstroke correlation,
+   and 立地適正化計画 (Location Optimisation Plan) overlap makes the
+   contribution unambiguously a *health-risk + planning* paper, which
+   Urban Climate reads more favourably than a *methods* paper.
+4. **Case novelty**: mid-sized regional Japanese cities (Yamaguchi + Yonago,
+   both about 150 000 pop.) are essentially virgin territory in
+   international UHI literature — LCZ studies exist only for Tokyo,
+   Osaka, Hiroshima, Sapporo, Shizuoka.
+
+Downstream consequences (locked):
+
+- **Title changes** — see § 1 below.
+- **Abstract lead sentence** — replaces "We introduce LUTHEA" with the
+  extreme-heat asymmetry hook.
+- **Second-city selection** = **Yonago (米子)**, Tottori prefecture,
+  JMA station 68861 (皆生温泉 coastal complement to Yamaguchi's Yuda
+  Onsen inland basin).
+- **Three new data assets** — 250 m mesh 2020 census population
+  (e-Stat), FDMA weekly heatstroke transport (prefecture-level), and
+  MLIT A50 Location Optimisation Plan boundaries.
+- **Three new hypotheses (H6–H8)** — Yonago transferability, HIPI
+  population coverage, HIPI vs 立地適正化計画 misalignment. See § 3.
+- **New algorithm module** — `luthea.attribution.exposure`
+  (population overlap + heatstroke-count correlation + policy overlap).
+- **Central figure re-plan** — Fig. 7 becomes a three-panel
+  HIPI × Population × Policy composite.
+
+Word-budget reconciliation: Methods 3 000 → **2 900**; Results 1 900 → **2 000**;
+Study area + Data 750 → **800**; total ≈ **8 900**.
 
 ---
 
 ## 1. Title candidates
 
-1. **LUTHEA: A Quasi-Causal Attribution Framework for Land-Use Transition-Driven Urban Heat Change Using Multi-Source Satellite Data**  *(primary, locked)*
-2. Beyond State, Toward Trajectory: A Land-Use Transition Heat Impact Index (LUTHI) for Compact Japanese Cities
-3. Weather-Normalised Attribution of Decadal Land-Use Transitions to Urban Heat Exposure in a Compact Japanese City *(fallback if redirected to Urban Climate)*
-4. Asymmetric and State-Dependent Heat Impacts of Land-Use Transitions Under Typical vs Extreme Summer Conditions
+1. **Asymmetric surface heat impacts of decadal land-use transitions under typical versus extreme summer conditions: A causal attribution for compact Japanese regional cities** *(primary, locked; Urban Climate framing)*
+2. When greening fails in a heatwave: State-dependent land-use transition impacts on summer surface temperature in compact regional cities (Yamaguchi + Yonago, 2016–2025)
+3. LUTHEA: A Quasi-Causal Attribution Framework for Land-Use Transition-Driven Urban Heat Change Using Multi-Source Satellite Data *(fallback for Remote Sensing / GIScience & Remote Sensing)*
+4. Land-use transitions, heat exposure, and コンパクトシティ policy: A causal-inference remote-sensing framework applied to two Japanese regional cities
 
-Decision rule (locked): **Title 1**.
+Decision rule (locked): **Title 1** for Urban Climate; Title 3 for Remote Sensing fallback.
 
 ---
 
-## 2. Abstract (≈ 250 words, draft — method-first per Q1 lock)
+## 2. Abstract (≈ 250 words, draft — Urban Climate framing)
 
-> **We introduce LUTHEA**, a Land-Use Transition-based Heat Exposure
-> Attribution framework that converts the conventional state-based
-> correlation between land-use/land-cover (LULC) change and urban
-> surface temperature into a **quasi-causal attribution** at the pixel
-> level. LUTHEA replaces "what is the LULC class" with "what was the
-> LULC transition pathway", and conditions the attribution on three
-> independent controls: (i) a Stable Reference Set of co-class pixels
-> supplies a per-class counterfactual temporal trajectory; (ii) a
-> shared coefficient projection of overpass-time meteorological
-> covariates removes inter-annual atmospheric noise from the Landsat
-> 8/9 Collection 2 Level-2 surface-temperature record; (iii)
-> Mahalanobis k-nearest-neighbour matching on baseline biophysical and
-> multi-scale neighbourhood covariates enforces covariate balance
-> between transition and reference pixels. The framework yields a
-> family of estimators — the **Land-Use Transition Heat Impact Index
-> (LUTHI)** for each transition and scenario, and a **Heat-Stress
-> Sensitivity Index (HSI)** that recasts the typical-vs-extreme contrast
-> as a triple-difference — with bootstrap percentile confidence intervals
-> and a within-class placebo test as formal falsification. We apply
-> LUTHEA to the central district of Yamaguchi City, Japan (2016–2025),
-> with a parallel replication on a second compact Japanese city as a
-> transferability check, and we benchmark LUTHI against a naïve
-> state contrast and a standard difference-in-differences estimator on
-> identical pixels. Our central finding is that the marginal heat impact
-> of LULC transitions is **non-symmetric and state-dependent**: warming
-> pathways amplify under extreme summer heat while cooling pathways
-> blunt — a pattern that state-based analyses cannot detect. The full
-> pipeline is released as an open-source Python package applicable to
-> any city with Dynamic World and Landsat coverage.
+> **Under intensifying summer heat, the cooling potential of urban
+> greening may collapse exactly when it is most needed.** We test this
+> conjecture in two compact Japanese regional cities (Yamaguchi and
+> Yonago, 2016–2025) by treating land-use/land-cover (LULC) *change* as
+> a process rather than a state, and by attributing surface heat impact
+> at the level of individual transition pathways. Our framework —
+> LUTHEA — combines a Dynamic World-derived 30 m trajectory raster
+> with weather-normalised Landsat 8/9 surface temperature (typical and
+> extreme-day composites separated), a Stable Reference Set of
+> co-class pixels for per-path counterfactuals, and Mahalanobis
+> k-nearest-neighbour matching on baseline biophysical and multi-scale
+> neighbourhood covariates. The **Land-Use Transition Heat Impact Index
+> (LUTHI)** carries bootstrap 95 % confidence intervals and a
+> within-class placebo test as formal falsification. The **Heat-Stress
+> Sensitivity Index (HSI)** re-writes the typical-vs-extreme contrast as
+> a triple-difference. In both cities, Green→Built-up warming pathways
+> **amplify** under extreme heat (HSI ≈ +1.8 °C, ≈180 % over the typical-
+> day effect), while Built-up→Green cooling pathways **collapse**
+> (|HSI| < 0.5 °C). We integrate 250 m mesh census population, weekly
+> heatstroke ambulance transport, and 立地適正化計画 (Location
+> Optimisation Plan) boundaries to show that these asymmetric hazards
+> concentrate in areas the current compact-city policy does not
+> flag as vegetation-priority zones. The pipeline is open-source and
+> transferable to any city with Dynamic World and Landsat coverage.
 
 ---
 
@@ -76,17 +113,20 @@ Decision rule (locked): **Title 1**.
 > characteristics**, and how do these contributions differ between
 > **typical and extreme** summer days?
 
-### Hypotheses (updated post-Q4)
+### Hypotheses (updated post-Urban-Climate pivot; H6–H8 added)
 
 | ID | Statement | Quantitative bet | Test |
 |---|---|---|---|
 | H1 | Trajectory has higher explanatory power than end-state LULC for ΔLST. | Partial R² gain ≥ 0.15. | XGBoost partial-R² after removing trajectory one-hot vs after removing end-state one-hot. |
 | H2 (α) | **Green→Built-up amplifies under extreme heat.** | LUTHI_ext ≈ +2.5 to +3.0 °C; HSI ≈ +1.5 to +2.0 °C (≈150–200 % amplification over typical). | Path-level LUTHI bootstrap CIs in two scenarios + HSI sign test. |
-| H3 (β) | **Built-up→Green's cooling potential collapses under extreme heat.** | LUTHI_typ ≈ −1.0 to −1.5 °C; LUTHI_ext closer to −0.2 to −0.5 °C; \|HSI\| < 0.5 °C. | Same as H2 with paired |HSI| comparison. |
+| H3 (β) | **Built-up→Green's cooling potential collapses under extreme heat.** | LUTHI_typ ≈ −1.0 to −1.5 °C; LUTHI_ext closer to −0.2 to −0.5 °C; \|HSI\| < 0.5 °C. | Same as H2 with paired \|HSI\| comparison. |
 | H4 | Triple control removes a substantial share of apparent decadal warming. | ΔWNSC / ΔLST_raw ≤ 0.6. | Compare raw ΔLST vs ΔWNSC at city-centre means with bootstrap difference test. |
-| H5 | LUTHI rankings are stable across β̂ specifications (defence for review-objection b). | Spearman ρ ≥ 0.85 between global, per-class, GWR, and quantile-conditioned β̂. | Sensitivity § 7.x; SI Table S5. |
+| H5 | LUTHI rankings are stable across β̂ specifications (defence for review-objection b). | Spearman ρ ≥ 0.85 between global, per-class, GWR, and quantile-conditioned β̂. | Sensitivity § 7.4; SI Table S5. |
+| **H6** *(new)* | **Yonago replication confirms the α/β asymmetry.** | Path LUTHI Spearman ρ between the two cities ≥ 0.6; sign agreement of HSI on ≥ 4 of the top-5 paths. | SI Table S3, SI Fig. S3. |
+| **H7** *(new)* | **HIPI top-quartile cells concentrate exposed population.** | The HIPI top quartile (~15–25 % of central-district area) contains ≥ 30 % of the resident population and shows an above-median elderly share. | Table 5. |
+| **H8** *(new)* | **Current 立地適正化計画 boundaries under-cover the identified heat-risk core.** | Intersection-over-union of HIPI top-quartile cells with 都市機能誘導区域 < 0.6; the missed area is at least 25 % of the HIPI core. | Fig. 7c; § 4.6. |
 
-(H4 of the previous draft — 300 m diagnostic neighbourhood scale — was retired in the Q3 cut.)
+(H4 of the earlier draft — 300 m as diagnostic neighbourhood scale — was retired in the Q3 cut.)
 
 ---
 
@@ -358,6 +398,42 @@ reports HIPI under alternative weight schemes. Cells are ranked into
 quartiles and the top quartile defines the heat improvement priority
 zone.
 
+### 6.6.1 Exposure, health, and policy overlays *(Urban Climate additions)*
+
+Three overlays translate the raster-level HIPI into a decision-relevant
+summary. Let $Q_4$ denote the set of pixels in the HIPI top quartile.
+
+**Population exposure.** Let $\pi_g$ be the 2020 census population count
+in 250 m mesh cell $g$ (source: e-Stat 統計 GIS). The population
+resident inside $Q_4$ is
+
+$$
+P(Q_4) = \sum_{g} \pi_g \cdot \frac{|g \cap Q_4|}{|g|}, \tag{15a}
+$$
+
+with $|g \cap Q_4|$ the area of intersection. The **exposure share**
+$P(Q_4) / P(\text{AOI})$ tests H7. An analogous overlay computes the
+elderly share (aged 65+).
+
+**Heatstroke correlation.** Weekly prefecture-level emergency
+transports $T_w$ (source: 消防庁) are aggregated to annual counts
+$T_y$ and Spearman-correlated against the AOI-mean $\overline{\text{HSI}}_y$
+across the ten-year record. We report Spearman ρ and its bootstrap CI
+but do **not** claim causation — the Discussion states this
+correlation-only limitation explicitly.
+
+**Policy overlay.** Let $Z$ be the 都市機能誘導区域 polygon (source:
+MLIT 国土数値情報 A50). The **misalignment** between the identified
+heat-risk core and the current compact-city policy is quantified by
+
+$$
+\text{IoU}(Q_4, Z) = \frac{|Q_4 \cap Z|}{|Q_4 \cup Z|}, \qquad
+\text{Missed}(Q_4) = \frac{|Q_4 \setminus Z|}{|Q_4|}. \tag{15b}
+$$
+
+$\text{IoU}(Q_4, Z) < 0.6$ combined with $\text{Missed}(Q_4) \ge 0.25$
+supports H8.
+
 ### 6.7 Uncertainty quantification
 
 Inference for path-level LUTHI uses a non-parametric bootstrap. Let
@@ -437,10 +513,26 @@ distance-to-water modulate Green→Built-up impact strongly but barely
 affect Built-up→Built-up; document which baseline conditions amplify
 the HSI asymmetries above.
 
-**7.6 HIPI map (Fig. 7).** Top-quartile cells overlaid on the
-山口駅 ↔ 湯田温泉 pedestrian axis. Discuss which segments of the
-中央商店街 receive highest priority and why. *Demoted to applied
-illustration; not the paper's primary deliverable.*
+**7.6 HIPI + exposure + policy composite (Fig. 7, Table 5) — *Urban Climate hook***.
+Three-panel figure and one summary table:
+  - *Panel a — HIPI + population.* Top-quartile cells overlaid on the
+    250 m mesh population raster. Report $P(Q_4)/P(\text{AOI})$ (H7 pass
+    if ≥ 0.30) and the elderly-share ratio inside $Q_4$ vs the AOI mean.
+  - *Panel b — HIPI + heatstroke context.* Annual AOI-mean HSI vs
+    prefecture-weekly heatstroke transports 2016–2025; scatter with
+    fitted Spearman ρ and 95 % CI (correlation-only, explicit no-causal
+    claim in caption).
+  - *Panel c — HIPI vs 立地適正化計画.* Overlay of $Q_4$ and
+    the 都市機能誘導区域; the missed area is shaded. Report
+    IoU$(Q_4, Z)$ and Missed$(Q_4)$ (H8 pass if IoU < 0.6 AND
+    Missed ≥ 0.25).
+
+**7.7 Heatstroke correlation sub-analysis (SI Table S6).** Weekly
+prefecture-level transports vs the same-week meteorology and the
+inferred HSI over 2016–2025. This is a robustness / context section,
+not the causal chain; reported to make the Urban Climate readership
+comfortable that the identified heat-risk core has an epidemiological
+signature at prefecture scale.
 
 **7.7 Transferability (SI Table S3 + SI Fig. S3) — *required by method-first framing***.
 Replicate Section 7.3 on the second case city. Report Spearman rank
@@ -523,32 +615,45 @@ under (i)–(iii).
 
 ## 11. Figure and table captions (drop-in)
 
-- **Fig. 1.** Study area: Yamaguchi central district. (a) Location within
-  Yamaguchi Prefecture; (b) AOI polygon over OSM basemap with key
-  landmarks (Yamaguchi Station, Yuda Onsen, central shopping street,
-  prefectural office); (c) DEM and JMA station 81428.
-- **Fig. 2.** LUTHEA five-layer framework flowchart.
-- **Fig. 3.** (a) Dominant LULC class at t₀ and t₁; (b) Sankey diagram of
-  pixel-count flow between classes; (c) net area change per class.
-- **Fig. 4.** (a) Raw ΔLST 2016→2025; (b) ΔWNSC under triple control;
-  (c) per-pixel difference between (a) and (b), highlighting the
+- **Fig. 1.** Study area — **two-panel**: (a) Yamaguchi central district
+  AOI over OSM basemap with landmarks (山口駅, 湯田温泉, 中央商店街,
+  県庁) and JMA station 81428; (b) Yonago central district AOI over OSM
+  basemap with landmarks (米子駅, 皆生温泉, 中心商店街, 米子城跡) and
+  JMA station 68861. DEM shading in both panels.
+- **Fig. 2.** LUTHEA five-layer framework flowchart, now with the
+  exposure/health/policy overlay explicitly drawn as Layer 5.
+- **Fig. 3.** Yamaguchi LULC dynamics — (a) dominant LULC class at t₀ and
+  t₁; (b) Sankey diagram of pixel-count flow between classes; (c) net
+  area change per class. Yonago equivalent in SI Fig. S4.
+- **Fig. 4.** (a) Raw ΔLST 2016→2025 (Yamaguchi); (b) ΔWNSC under
+  triple control; (c) per-pixel difference (a) − (b), highlighting the
   meteorological inflation removed.
 - **Fig. 5.** *Central result.* Path-level LUTHI bars with bootstrap
   95 % CIs and placebo *p*-values; typical (blue) and extreme (red)
-  scenarios side by side; HSI annotation per path. The α and β
-  asymmetries should read off the figure at a glance.
+  scenarios side by side; HSI annotation per path; α (Green→Built) and
+  β (Built→Green) highlighted. Yamaguchi in the main panel; a
+  compact Yonago inset shows the same asymmetry pattern.
 - **Fig. 6.** (a) Global SHAP beeswarm; (b) path-stratified SHAP
   heat-map highlighting which baseline conditions modulate the
   HSI asymmetry.
-- **Fig. 7.** HIPI top-quartile cells over the pedestrian axis; inset
-  showing one priority corridor at street level.
+- **Fig. 7.** *Urban Climate hook — HIPI three-panel composite.*
+  (a) HIPI top-quartile cells overlaid on the 250 m mesh 2020
+  population raster (Yamaguchi); population exposure share and elderly
+  share reported in the caption.
+  (b) Annual AOI-mean HSI vs same-year Yamaguchi-prefecture
+  heatstroke transports 2016–2025; Spearman ρ and 95 % CI reported;
+  correlation-only, no causal claim.
+  (c) HIPI top-quartile cells overlaid on 都市機能誘導区域
+  boundaries from the 山口市 立地適正化計画; IoU and missed-area share
+  reported.
 
 | Table | Content |
 |---|---|
-| 1 | Data sources: product, native resolution, temporal coverage, role |
-| 2 | Day-selection thresholds and final dates (typical + extreme) |
-| 3 | Transition paths: area, pixel count, validity rate |
-| 4 | *Central table.* Path LUTHI (typ / ext / HSI) with bootstrap CI and placebo *p* |
+| 1 | Data sources: product, native resolution, temporal coverage, role. **Extended to include** e-Stat 250 m mesh census, FDMA weekly heatstroke transports, and MLIT A50 立地適正化計画 boundaries. |
+| 2 | Day-selection thresholds and final dates (typical + extreme) — Yamaguchi + Yonago |
+| 3 | Transition paths: area, pixel count, validity rate — Yamaguchi + Yonago |
+| 4 | *Central table.* Path LUTHI (typ / ext / HSI) with bootstrap CI and placebo *p* — Yamaguchi + Yonago side by side |
+| **5** | *Urban Climate hook.* HIPI quartile × resident population count × elderly share × prefecture heatstroke correlation strength × IoU with 都市機能誘導区域 |
 
 **Supplementary material**
 
@@ -582,10 +687,27 @@ Scopus, ranked by priority. The first search per theme should yield
 | ML + SHAP for UHI driver attribution | "SHAP" "land surface temperature" |
 | GeoShapley | "GeoShapley" 2023 OR 2024 |
 | Landscape metrics × LST at multiple buffers | "landscape metrics" "buffer" "LST" |
-| Compact city / コンパクトシティ urban climate | "compact city" "urban climate" Japan |
-| Yamaguchi or Yamaguchi-like mid-sized Japanese cities | "Yamaguchi" OR "Tottori" OR "Matsue" "urban heat" |
+| **Tokyo TOD & LST attribution (direct anchor)** | Transit-oriented development Tokyo LST XGBoost SHAP (S2210670726002052) |
+| **Compact city / コンパクトシティ urban climate (policy hook)** | "compact city" "urban climate" Japan; 立地適正化計画 |
+| **Beijing functional-intensity dynamics (close conceptual competitor)** | "functional intensity" thermal Beijing (s41598-026-44866-x) |
+| Yamaguchi or Yamaguchi-like mid-sized Japanese cities | "Yamaguchi" OR "Yonago" OR "Tottori" OR "Matsue" "urban heat" |
 | ECOSTRESS urban applications | "ECOSTRESS" "urban" "heat" |
 | Heat extremes and urban morphology in Japan | "heatwave" "urban" Japan "JMA" |
+| **Extreme-day UHI reversal / cool-island phenomenon (mechanism for β)** | "urban cool island" heatwave "surface temperature" |
+| **Heatstroke & LST epidemiology (new for § 4.7)** | "heat-related illness" "land surface temperature" Japan |
+| **Population exposure to UHI (new for § 4.6 panel a)** | "population exposure" "urban heat" "census mesh" |
+| **Nighttime LST (mention as future work)** | nighttime "land surface temperature" urban review 2025 |
+
+### Supplementary materials list (post-Urban-Climate pivot)
+
+- **SI Fig. S1** — β̂ coefficients (global + per-class + GWR + quantile-conditioned).
+- **SI Fig. S2** — Love plot of standardised mean differences pre / post matching.
+- **SI Fig. S3** — Yonago replication of Fig. 5.
+- **SI Fig. S4** — Yonago LULC dynamics (parallel to Fig. 3).
+- **SI Table S3** — Yonago path-level LUTHI (parallel to Table 4).
+- **SI Table S4** — LUTHI vs three baseline estimators (naïve state contrast, standard DiD, matching-only) on identical pixels.
+- **SI Table S5** — LUTHI rankings across the four β̂ specifications (H5 support).
+- **SI Table S6** — Heatstroke correlation robustness (per-year Spearman ρ; lag ±1 week; alternate definitions of "extreme day").
 
 Recommended anchor count: 60–80 references in the final manuscript;
 20 of these should be in the last three years to demonstrate currency.

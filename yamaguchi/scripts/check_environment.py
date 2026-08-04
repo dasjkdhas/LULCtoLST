@@ -85,6 +85,9 @@ def check_luthea_package() -> None:
         "luthea.data_ingest.dynamic_world",
         "luthea.data_ingest.landsat_st",
         "luthea.data_ingest.jma",
+        "luthea.data_ingest.fdma",
+        "luthea.data_ingest.estat",
+        "luthea.data_ingest.mlit_a50",
         "luthea.lst.selection",
         "luthea.lst.normalize",
         "luthea.lulc.aggregate",
@@ -95,6 +98,7 @@ def check_luthea_package() -> None:
         "luthea.attribution.placebo",
         "luthea.attribution.baselines",
         "luthea.attribution.hipi",
+        "luthea.attribution.exposure",
         "luthea.ml.xgb_attribution",
         "luthea.ml.shap_layer",
         "luthea.viz.figures",
@@ -104,7 +108,7 @@ def check_luthea_package() -> None:
         except Exception as exc:
             fail(f"{sub} importable", f"{type(exc).__name__}: {exc}")
             return
-    ok("All 16 algorithm modules importable")
+    ok("All 20 algorithm modules importable")
 
 
 def check_earth_engine() -> None:
@@ -208,14 +212,74 @@ def check_jma() -> None:
 def check_output_dirs() -> None:
     section("Output directories")
     for sub in ["aoi", "outputs/lulc", "outputs/lst", "outputs/raw/jma",
+                "outputs/raw/estat", "outputs/raw/mlit_a50",
+                "outputs/raw/fdma",
                 "outputs/matching", "outputs/luthi", "outputs/ml",
-                "outputs/hipi", "figures", "tables"]:
+                "outputs/hipi", "figures", "tables",
+                "yonago/aoi", "yonago/outputs/raw/jma"]:
         d = PROJECT_ROOT / sub
         if d.exists():
             ok(f"{d.relative_to(PROJECT_ROOT)}/")
         else:
             d.mkdir(parents=True, exist_ok=True)
             ok(f"{d.relative_to(PROJECT_ROOT)}/  (created)")
+
+
+def check_yonago() -> None:
+    section("Yonago (second case city)")
+    aoi = PROJECT_ROOT / "yonago" / "aoi" / "yonago_center.geojson"
+    daily = PROJECT_ROOT / "yonago" / "outputs" / "raw" / "jma" / "yonago_daily.csv"
+    ten = PROJECT_ROOT / "yonago" / "outputs" / "raw" / "jma" / "yonago_10min.csv"
+    for label, path, step in [
+        ("Yonago AOI", aoi, "Step 5.1"),
+        ("Yonago daily JMA CSV (68861)", daily, "Step 5.2"),
+        ("Yonago AMeDAS 10-min CSV", ten, "Step 5.3"),
+    ]:
+        if path.exists():
+            ok(f"{label}: {path.relative_to(PROJECT_ROOT)}")
+        else:
+            fail(f"{label} present", f"See {DOCS_REF} {step}")
+
+
+def check_estat() -> None:
+    section("e-Stat 250 m mesh census (population)")
+    for pref in ("yamaguchi", "tottori"):
+        d = PROJECT_ROOT / "outputs" / "raw" / "estat" / f"{pref}_250m_pop_2020"
+        shps = list(d.glob("*.shp")) if d.exists() else []
+        if shps:
+            ok(f"{pref} mesh shapefile: {shps[0].relative_to(PROJECT_ROOT)}")
+        else:
+            fail(f"e-Stat 250 m mesh for {pref}",
+                 f"See {DOCS_REF} Step 6")
+
+
+def check_mlit_a50() -> None:
+    section("MLIT A50 立地適正化計画 (policy overlay)")
+    d = PROJECT_ROOT / "outputs" / "raw" / "mlit_a50"
+    uda_shps = list(d.glob("*_UDA.shp")) if d.exists() else []
+    if uda_shps:
+        prefixes = {p.name.split("-")[1].split("_")[0] for p in uda_shps
+                    if "-" in p.name}
+        ok(f"A50 UDA shapefiles ({len(uda_shps)}): prefectures {sorted(prefixes)}")
+    else:
+        fail("A50 UDA shapefiles present",
+             f"See {DOCS_REF} Step 7 (need prefecture codes 35 + 31)")
+
+
+def check_fdma() -> None:
+    section("FDMA heatstroke transports (correlation-only)")
+    d = PROJECT_ROOT / "outputs" / "raw" / "fdma"
+    xlsxs = sorted(d.glob("heatstroke_*.xlsx")) if d.exists() else []
+    if len(xlsxs) >= 8:
+        years = sorted({int("".join(c for c in x.stem if c.isdigit())[:4])
+                        for x in xlsxs})
+        ok(f"FDMA workbooks: {len(xlsxs)} files, years {years[0]}–{years[-1]}")
+    elif xlsxs:
+        fail(f"FDMA workbooks (found {len(xlsxs)}, need ≥ 8)",
+             f"See {DOCS_REF} Step 8; download 2016–2025 (Reiwa/Heisei to Gregorian rename)")
+    else:
+        fail("FDMA workbooks present",
+             f"See {DOCS_REF} Step 8")
 
 
 # ── helpers ─────────────────────────────────────────────────────────────
@@ -308,6 +372,10 @@ def main() -> int:
     check_output_dirs()
     check_aoi()
     check_jma()
+    check_yonago()
+    check_estat()
+    check_mlit_a50()
+    check_fdma()
 
     print()
     print("=" * 70)

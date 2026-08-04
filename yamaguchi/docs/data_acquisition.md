@@ -5,22 +5,31 @@
 > `python yamaguchi/scripts/check_environment.py` prints all ✓ and you
 > can run `luthea ingest-dw` / `luthea ingest-lst` without further setup.
 
-The pipeline needs **three** data assets from you. Everything else is
-pulled automatically by code from Earth Engine or NASA Earthdata.
+The pipeline (Urban Climate version, with Yonago as second case city and
+population + heatstroke + policy overlays) needs **nine** data assets from
+you. Everything else is pulled automatically by code from Earth Engine.
 
 | # | Asset | Source | Format | Target path | Mandatory? |
 |---|---|---|---|---|---|
 | 1 | AOI polygon of 山口市中心市街地 | hand-drawn in QGIS | GeoJSON | `yamaguchi/aoi/yamaguchi_center.geojson` | ✅ yes |
-| 2 | JMA 山口観測所 日別値 2016–2025 | JMA download portal | CSV (Shift-JIS / cp932) | `yamaguchi/outputs/raw/jma/yamaguchi_daily.csv` | ✅ yes |
-| 3 | JMA 山口 AMeDAS 10分値 (summer 2016–2025) | JMA download portal | CSV (Shift-JIS / cp932) | `yamaguchi/outputs/raw/jma/yamaguchi_10min.csv` | ✅ yes |
+| 2 | JMA 山口観測所 日別値 2016–2025 | JMA obsdl portal | CSV (Shift-JIS) | `yamaguchi/outputs/raw/jma/yamaguchi_daily.csv` | ✅ yes |
+| 3 | JMA 山口 AMeDAS 10分値 (summer 2016–2025) | JMA obsdl portal | CSV (Shift-JIS) | `yamaguchi/outputs/raw/jma/yamaguchi_10min.csv` | ✅ yes |
+| 4 | AOI polygon of 米子市中心市街地 | hand-drawn in QGIS | GeoJSON | `yamaguchi/yonago/aoi/yonago_center.geojson` | ✅ yes |
+| 5 | JMA 米子観測所 日別値 2016–2025 (station 68861) | JMA obsdl portal | CSV (Shift-JIS) | `yamaguchi/yonago/outputs/raw/jma/yonago_daily.csv` | ✅ yes |
+| 6 | JMA 米子 AMeDAS 10分値 (summer 2016–2025) | JMA obsdl portal | CSV (Shift-JIS) | `yamaguchi/yonago/outputs/raw/jma/yonago_10min.csv` | ✅ yes |
+| 7 | 250 m mesh 2020 census population for Yamaguchi + Tottori prefectures | e-Stat 統計 GIS | Shapefile | `yamaguchi/outputs/raw/estat/{yamaguchi,tottori}_250m_pop_2020/` | ✅ yes |
+| 8 | 立地適正化計画区域データ (national A50, extract Yamaguchi + Yonago) | 国土数値情報 A50 | Shapefile (GML) | `yamaguchi/outputs/raw/mlit_a50/` | ✅ yes |
+| 9 | FDMA 熱中症救急搬送 weekly reports 2016–2025 | 消防庁 熱中症情報 | XLSX + CSV | `yamaguchi/outputs/raw/fdma/heatstroke_YYYY.xlsx` | ✅ yes |
 
 You will also need:
 - **Earth Engine account + a Google Cloud project with Earth Engine API
   enabled** (free for research use; ~5 minutes to set up).
 - A working Python environment (`mamba env create -f yamaguchi/env/environment.yml`).
 
-Total operator time: **about 2 hours**, dominated by the JMA CSV
-download UI (it is form-based, not API-based).
+Total operator time: **about 3.5 hours** for all nine assets. All manual
+downloads combined take ~2.5 h; the QGIS AOI work adds ~1 h (30 min per
+city). None of these portals expose a scriptable API; all require browser
+navigation.
 
 ---
 
@@ -187,9 +196,137 @@ summer scenes; you do not need the whole year, just June–September.
 
 ---
 
-## Step 5 — Run the environment check
+## Step 5 — Yonago (米子) AOI + JMA data (≈ 1 hour)
 
-After Steps 1–4 are done, run:
+The Urban Climate submission mandates a second case city. Yonago
+(米子市, Tottori) is picked for its shared "compact regional city +
+onsen quarter + コンパクトシティ policy" profile with a **coastal**
+morphology contrast to Yamaguchi's inland basin.
+
+### 5.1 Draw Yonago AOI
+
+1. In QGIS, jump to lat 35.428°, lon 133.331° (米子駅).
+2. Add a new polygon layer (EPSG:4326) and draw a single polygon
+   covering:
+   - 米子駅 (south-east)
+   - 皆生温泉 (north, at the coast)
+   - 中心商店街 (角盤町 / 法勝寺町)
+   - 米子城跡 (west)
+   - extend ≥ 500 m beyond the outermost landmark
+3. Export as GeoJSON to `yamaguchi/yonago/aoi/yonago_center.geojson`.
+4. Sanity check area (target 8–15 km²):
+
+   ```bash
+   python -c "import geopandas as gpd; \
+     g = gpd.read_file('yamaguchi/yonago/aoi/yonago_center.geojson').to_crs(6670); \
+     print(f'area_km2={g.area.sum()/1e6:.2f}')"
+   ```
+
+### 5.2 Yonago JMA daily values 2016–2025
+
+Same portal <https://www.data.jma.go.jp/risk/obsdl/index.php>. Station:
+**米子 (観測所番号 68861)**. Columns and date range identical to
+Step 3. Save to `yamaguchi/yonago/outputs/raw/jma/yonago_daily.csv`.
+
+### 5.3 Yonago AMeDAS 10-min summer values
+
+Same as Step 4 but station **米子 AMeDAS**. Save to
+`yamaguchi/yonago/outputs/raw/jma/yonago_10min.csv`.
+
+> **Pitfall**: the 米子 观測所 and the 米子 AMeDAS coexist under the same
+> station name; make sure the "AMeDAS 観測所" toggle is on for Step 5.3.
+
+---
+
+## Step 6 — 250 m mesh 2020 census population (e-Stat) (≈ 30 min)
+
+Provides the population denominators for the HIPI exposure overlay
+(H7).
+
+1. Open <https://www.e-stat.go.jp/gis> → **統計データダウンロード** →
+   **国勢調査 → 2020年 → 4次メッシュ (500 m) or 5次メッシュ (250 m)**.
+   Pick **5次メッシュ (250 m)** — the finer resolution matches our
+   HIPI grid.
+2. **項目 (variables)**: at minimum
+   - 総人口 (total population)
+   - 65 歳以上人口 (elderly, aged 65+)
+   - 総世帯数 (households)
+3. **地域 (region)**: select prefectures — one download per prefecture:
+   - 山口県 → save shapefile bundle to
+     `yamaguchi/outputs/raw/estat/yamaguchi_250m_pop_2020/`
+   - 鳥取県 → save shapefile bundle to
+     `yamaguchi/outputs/raw/estat/tottori_250m_pop_2020/`
+4. Click **ダウンロード**, save the resulting `.zip`, unzip in place.
+   Each unzipped folder should contain `MESH_2020_ppp.shp` (or similar
+   canonical mesh filename) plus `.dbf`, `.shx`, `.prj`.
+5. Sanity check:
+
+   ```bash
+   python -c "import geopandas as gpd; \
+     g = gpd.read_file('yamaguchi/outputs/raw/estat/yamaguchi_250m_pop_2020'); \
+     print(len(g), list(g.columns)[:8], g['MESH1_ID'].iloc[0] if 'MESH1_ID' in g.columns else '')"
+   ```
+
+> **Pitfall**: e-Stat sometimes distributes only 500 m mesh at
+> prefecture level and 250 m mesh at national level. If the 250 m
+> prefecture download is unavailable, take the national 250 m file and
+> clip to prefecture — see `luthea.data_ingest.estat.clip_to_aoi`.
+
+---
+
+## Step 7 — MLIT 立地適正化計画 boundaries (A50) (≈ 15 min)
+
+Provides the 都市機能誘導区域 polygons for the policy overlay (H8).
+
+1. Open <https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-A50-v1_0.html>.
+2. Download the latest year available (as of 2026, fiscal year 2023 or
+   later). One national ZIP (~200 MB).
+3. Unzip to `yamaguchi/outputs/raw/mlit_a50/`. Expect files following
+   `A50-YY_XX-jgd_1_UDA.shp` naming (XX = prefecture two-digit code:
+   **35** for Yamaguchi, **31** for Tottori).
+4. Sanity check:
+
+   ```bash
+   python -c "import geopandas as gpd; \
+     g = gpd.read_file('yamaguchi/outputs/raw/mlit_a50/A50-YY_35-jgd_1_UDA.shp'); \
+     print(len(g), 'polygons; first city:', g['A50_004'].iloc[0])"
+   ```
+
+> **Pitfall**: MLIT's `A50` is a schema-family. **UDA** shapefiles are
+> 都市機能誘導区域, **JIA** are 居住誘導区域, **URA** are the outer
+> 立地適正化計画区域. We need **UDA** for H8.
+
+---
+
+## Step 8 — FDMA 熱中症救急搬送 weekly reports (≈ 20 min)
+
+Provides the annual prefecture-level heatstroke ambulance transport
+counts for the correlation-only sub-analysis (§ 4.7).
+
+1. Open <https://www.fdma.go.jp/disaster/heatstroke/post4.html>.
+2. Under **過去のデータ一覧**, download the weekly PDF/XLSX bundle for
+   each year 2016 (平成28) through 2025 (令和7). Ten files total.
+3. Save into `yamaguchi/outputs/raw/fdma/` with names
+   `heatstroke_YYYY.xlsx` (rename Reiwa/Heisei to Gregorian).
+4. Sanity check will be done by the environment checker; the parser
+   inside `luthea.data_ingest.fdma.load_prefecture_weekly` normalises
+   the file layout.
+
+> **Pitfall**: for early years (2016–2019) some releases are PDF-only.
+> The parser tries `openpyxl` first and falls back to a printed error
+> pointing you to `tabula-py` or manual OCR; do not delete the PDFs.
+
+> **Limitation you must acknowledge**: FDMA reports data at
+> **prefecture-week** granularity, not municipality-week. All heatstroke
+> analyses in the manuscript are therefore *correlation-only* between
+> the AOI-mean HSI and the whole-prefecture transport count. This is
+> explicitly stated in § 6 Limitations of the manuscript.
+
+---
+
+## Step 9 — Run the environment check
+
+After Steps 1–8 are done, run:
 
 ```bash
 python yamaguchi/scripts/check_environment.py
