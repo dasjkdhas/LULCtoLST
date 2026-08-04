@@ -242,28 +242,104 @@ def check_yonago() -> None:
 
 
 def check_estat() -> None:
+    """e-Stat ingest accepts EITHER a boundary shapefile OR the statistics
+    table alone — mesh codes carry their own geometry, so the shapefile
+    download is optional."""
     section("e-Stat 250 m mesh census (population)")
     for pref in ("yamaguchi", "tottori"):
         d = PROJECT_ROOT / "outputs" / "raw" / "estat" / f"{pref}_250m_pop_2020"
-        shps = list(d.glob("*.shp")) if d.exists() else []
+        if not d.exists():
+            fail(f"e-Stat 250 m mesh for {pref}", f"See {DOCS_REF} Step 6")
+            continue
+        shps = list(d.glob("*.shp"))
+        tables = sorted(d.glob("tbl*.txt")) + sorted(d.glob("tbl*.csv"))
         if shps:
-            ok(f"{pref} mesh shapefile: {shps[0].relative_to(PROJECT_ROOT)}")
+            ok(f"{pref}: boundary shapefile {shps[0].name}")
+        elif tables:
+            ok(f"{pref}: statistics table {tables[0].name} "
+               "(geometry derived from mesh codes — no shapefile needed)")
         else:
-            fail(f"e-Stat 250 m mesh for {pref}",
+            fail(f"e-Stat data for {pref} (need *.shp or tbl*.txt)",
                  f"See {DOCS_REF} Step 6")
+            continue
+        _try_parse_estat(d, pref)
+
+
+def _try_parse_estat(directory, pref: str) -> None:
+    try:
+        from luthea.data_ingest.estat import load_mesh_auto
+        gdf = load_mesh_auto(directory)
+        cols = [c for c in ("total_pop", "elderly_pop", "households")
+                if c in gdf.columns]
+        ok(f"  {pref}: {len(gdf)} mesh cells parsed; population columns {cols}")
+        if "total_pop" not in cols:
+            fail(f"  {pref}: 'total_pop' column resolved",
+                 "Re-download with 人口（総数） ticked — see "
+                 f"{DOCS_REF} Step 6")
+    except ImportError:
+        fail(f"  {pref}: geopandas needed to parse e-Stat mesh",
+             "`pip install geopandas`")
+    except Exception as exc:
+        fail(f"  {pref}: e-Stat parse", f"{type(exc).__name__}: {exc}")
 
 
 def check_mlit_a50() -> None:
+    """A50 ships in two layouts; accept either. Tottori (31) is absent
+    from the A50-20 national release — reported as a known gap, not a
+    failure."""
     section("MLIT A50 立地適正化計画 (policy overlay)")
     d = PROJECT_ROOT / "outputs" / "raw" / "mlit_a50"
-    uda_shps = list(d.glob("*_UDA.shp")) if d.exists() else []
-    if uda_shps:
-        prefixes = {p.name.split("-")[1].split("_")[0] for p in uda_shps
-                    if "-" in p.name}
-        ok(f"A50 UDA shapefiles ({len(uda_shps)}): prefectures {sorted(prefixes)}")
+    if not d.exists():
+        fail("A50 directory present", f"See {DOCS_REF} Step 7")
+        return
+
+    legacy = list(d.rglob("*_UDA.shp"))
+    current = [p for p in d.rglob("A50-*_*.shp")
+               if p.stem.split("_")[-1].isdigit()
+               and len(p.stem.split("_")[-1]) == 5]
+
+    if legacy:
+        ok(f"A50 legacy-layout UDA shapefiles: {len(legacy)}")
+    elif current:
+        prefs = sorted({p.stem.split("_")[-1][:2] for p in current})
+        ok(f"A50 current-layout municipality shapefiles: {len(current)} "
+           f"across prefectures {prefs}")
     else:
-        fail("A50 UDA shapefiles present",
-             f"See {DOCS_REF} Step 7 (need prefecture codes 35 + 31)")
+        fail("A50 shapefiles present (either layout)",
+             f"See {DOCS_REF} Step 7")
+        return
+
+    _try_load_a50(d, "35", "Yamaguchi", required=True)
+    _try_load_a50(d, "31", "Tottori", required=False)
+
+
+def _try_load_a50(base, code: str, label: str, required: bool) -> None:
+    try:
+        import warnings as _w
+        from luthea.data_ingest.mlit_a50 import load_zone
+        with _w.catch_warnings():
+            _w.simplefilter("ignore")
+            gdf = load_zone(base, code, zone="UDA")
+        if len(gdf) > 0:
+            ok(f"  {label} (code {code}): {len(gdf)} UDA polygons "
+               f"[{gdf.attrs.get('layout', 'n/a')} layout]")
+        elif gdf.attrs.get("unpublished"):
+            ok(f"  {label} (code {code}): NOT PUBLISHED in A50-20 — "
+               "H8 policy overlay will be reported as unavailable "
+               "(known data gap, documented in Limitations)")
+        elif required:
+            fail(f"  {label} (code {code}) UDA polygons found",
+                 "Shapefiles exist but contain no A50_006 == 3 features; "
+                 f"verify the download per {DOCS_REF} Step 7")
+        else:
+            ok(f"  {label} (code {code}): no UDA polygons (optional)")
+    except ImportError:
+        fail("  geopandas needed to parse A50", "`pip install geopandas`")
+    except Exception as exc:
+        if required:
+            fail(f"  {label} A50 load", f"{type(exc).__name__}: {exc}")
+        else:
+            ok(f"  {label} A50 unavailable ({type(exc).__name__}) — optional")
 
 
 def check_fdma() -> None:
